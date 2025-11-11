@@ -2,13 +2,60 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/dashboardFragment">
+    app:startDestination="@id/loginFragment">
 
+    <!-- Login Fragment -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.dianadimla.walo.ui.fragments.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+
+        <!-- Navigate to Dashboard on successful login -->
+        <action
+            android:id="@+id/action_login_to_home"
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+
+        <!-- Navigate to Signup -->
+        <action
+            android:id="@+id/action_login_to_signup"
+            app:destination="@id/signupFragment" />
+    </fragment>
+
+    <!-- Signup Fragment -->
+    <fragment
+        android:id="@+id/signupFragment"
+        android:name="com.dianadimla.walo.ui.fragments.SignupFragment"
+        android:label="Sign Up"
+        tools:layout="@layout/fragment_signup">
+
+        <!-- Navigate to Dashboard on successful signup -->
+        <action
+            android:id="@+id/action_signup_to_home"
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/signupFragment"
+            app:popUpToInclusive="true" />
+
+        <!-- Navigate to Login -->
+        <action
+            android:id="@+id/action_signup_to_login"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+    <!-- Dashboard Fragment (The single source of truth) -->
     <fragment
         android:id="@+id/dashboardFragment"
         android:name="com.dianadimla.walo.ui.fragments.DashboardFragment"
         android:label="Dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_dashboard">
+
+        <!-- Optional: Navigate to Profile for logout -->
+        <action
+            android:id="@+id/action_home_to_profile"
+            app:destination="@id/profileFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/addTransactionFragment"
@@ -26,6 +73,14 @@
         android:id="@+id/profileFragment"
         android:name="com.dianadimla.walo.ui.fragments.ProfileFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+
+        <!-- Navigate back to login on logout -->
+        <action
+            android:id="@+id/action_profile_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/dashboardFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 </navigation>

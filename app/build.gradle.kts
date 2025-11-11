@@ -34,6 +34,11 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    // Enable View Binding
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {

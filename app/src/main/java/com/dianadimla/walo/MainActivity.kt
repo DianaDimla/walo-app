@@ -1,66 +1,43 @@
-package com.dianadimla.walo.ui.activities
+package com.dianadimla.walo
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.dianadimla.walo.R
-import android.util.Log
-import com.google.firebase.FirebaseApp
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.auth.FirebaseAuth
-
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize Firebase
-        FirebaseApp.initializeApp(this)
-
-        // Test Firestore connection
-        testFirestore()
-
-
+        // Find the NavHostFragment and get its NavController. This is the main container
+        // for all the fragments in the app.
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setupWithNavController(navController)
-    }
 
-    private fun testFirestore() {
-        val db = FirebaseFirestore.getInstance()
-        val dummy = hashMapOf(
-            "name" to "Diana",
-            "budget" to 5000,
-            "currency" to "EUR"
-        )
-
-        // Save dummy data
-        db.collection("users")
-            .add(dummy)
-            .addOnSuccessListener { doc ->
-                Log.d("FirestoreTest", "Document added with ID: ${doc.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.e("FirestoreTest", "Error adding document", e)
-            }
-
-        // Read dummy data
-        db.collection("users")
-            .get()
-            .addOnSuccessListener { result ->
-                for (document in result) {
-                    Log.d("FirestoreTest", "${document.id} => ${document.data}")
+        // This listener handles the visibility of the bottom navigation bar.
+        // The app crashes on startup if the BottomNavigationView is visible on a screen
+        // that is not a main destination (like the login and signup screens).
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                // List of main destinations where the bottom navigation should be visible.
+                R.id.dashboardFragment,
+                R.id.addTransactionFragment,
+                R.id.reportsFragment,
+                R.id.profileFragment -> {
+                    bottomNavigationView.visibility = View.VISIBLE
+                }
+                // Hide the bottom navigation on all other screens (e.g., login, signup).
+                else -> {
+                    bottomNavigationView.visibility = View.GONE
                 }
             }
-            .addOnFailureListener { e ->
-                Log.e("FirestoreTest", "Error getting documents", e)
-            }
+        }
     }
 }
