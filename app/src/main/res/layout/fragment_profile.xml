@@ -5,12 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="@color/app_background"
     tools:context=".ui.fragments.ProfileFragment">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Profile Screen"
+        android:textColor="@color/bold_text_color"
         android:textSize="24sp" />
 
     <Button

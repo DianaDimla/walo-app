@@ -1,36 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:gravity="center"
+    android:padding="24dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/app_background">
+
+    <ImageView
+        android:id="@+id/app_logo_signup"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/walobluebg"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="App Logo" />
+
+    <TextView
+        android:text="Sign Up"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        android:textColor="@color/bold_text_color"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/firstNameEditText"
+        android:hint="First Name"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/input_box_tint"
+        android:textColor="@color/bold_text_color"
+        android:textColorHint="@color/bold_text_color"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/lastNameEditText"
+        android:hint="Last Name"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/input_box_tint"
+        android:textColor="@color/bold_text_color"
+        android:textColorHint="@color/bold_text_color"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/emailEditText"
         android:hint="Email"
         android:inputType="textEmailAddress"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/input_box_tint"
+        android:textColor="@color/bold_text_color"
+        android:textColorHint="@color/bold_text_color"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/passwordEditText"
-        android:hint="Password (min 6 chars)"
+        android:hint="Password"
         android:inputType="textPassword"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/input_box_tint"
+        android:textColor="@color/bold_text_color"
+        android:textColorHint="@color/bold_text_color"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/confirmPasswordEditText"
+        android:hint="Confirm Password"
+        android:inputType="textPassword"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/input_box_tint"
+        android:textColor="@color/bold_text_color"
+        android:textColorHint="@color/bold_text_color"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <Button
         android:id="@+id/signupButton"
         android:text="Sign Up"
+        android:layout_marginTop="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/goToLoginText"
         android:text="Already have an account? Login"
-        android:textColor="@color/blue"
+        android:textColor="@color/bold_text_color"
         android:gravity="center"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 </LinearLayout>

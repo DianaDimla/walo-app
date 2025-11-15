@@ -2,5 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="blue">#FF2196F3</color>
+    
+    <!-- Wireframe Colors -->
+    <color name="app_background">#E5F0FF</color>
+    <color name="input_box_tint">#005BA6</color>
+    <color name="button_color">#91B48E</color>
+    <color name="bold_text_color">#285731</color>
+    
+    <!-- Navigation Bar -->
+    <color name="nav_bar_blue">#CDE0F7</color>
 </resources>

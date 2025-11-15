@@ -2,6 +2,13 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Walo" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/button_color</item>
+    </style>
+
+    <style name="Theme.Walo" parent="Base.Theme.Walo" />
+
+    <!-- Style for the BottomNavigationView selected item indicator -->
+    <style name="App.BottomNavigationView.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/nav_bar_blue</item>
     </style>
 </resources>

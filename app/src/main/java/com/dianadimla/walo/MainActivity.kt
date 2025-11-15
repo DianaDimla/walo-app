@@ -21,9 +21,7 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setupWithNavController(navController)
 
-        // This listener handles the visibility of the bottom navigation bar.
-        // The app crashes on startup if the BottomNavigationView is visible on a screen
-        // that is not a main destination (like the login and signup screens).
+        // This listener handles the visibility of the bottom navigation bar
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 // List of main destinations where the bottom navigation should be visible.

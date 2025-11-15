@@ -51,10 +51,17 @@
         android:label="Dashboard"
         tools:layout="@layout/fragment_dashboard">
 
-        <!-- Optional: Navigate to Profile for logout -->
+        <!-- Navigate to Profile for settings/logout -->
         <action
-            android:id="@+id/action_home_to_profile"
+            android:id="@+id/action_dashboard_to_profile"
             app:destination="@id/profileFragment" />
+            
+        <!-- Action to log out and return to the login screen -->
+        <action
+            android:id="@+id/action_dashboard_logout"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/dashboardFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment

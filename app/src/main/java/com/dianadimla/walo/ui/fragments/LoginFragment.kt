@@ -7,6 +7,7 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -36,6 +37,10 @@ class LoginFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         // Initialize SharedPreferences for "Remember Me" functionality
         sharedPrefs = requireContext().getSharedPreferences("WaloPrefs", Context.MODE_PRIVATE)
+
+        // Start the swimming animation on the logo
+        val swimAnimation = AnimationUtils.loadAnimation(context, R.anim.slow_swim)
+        binding.appLogo.startAnimation(swimAnimation)
 
         // If the user is already logged in and the "Remember Me" flag is set,
         // navigate directly to the main dashboard.

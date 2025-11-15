@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:text="Add Transaction Screen"
         android:textSize="24sp"
+        android:textColor="@color/bold_text_color"
         android:layout_gravity="center"/>
 
 

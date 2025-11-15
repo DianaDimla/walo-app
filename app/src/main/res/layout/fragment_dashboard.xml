@@ -1,16 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/app_background"
     tools:context=".ui.fragments.DashboardFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- Profile/Settings Icon -->
+    <ImageView
+        android:id="@+id/profile_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_profile"
+        app:tint="@color/bold_text_color"
+        android:contentDescription="Profile Settings"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Animated Walo Mascot -->
+    <ImageView
+        android:id="@+id/walo_mascot"
+        android:layout_width="193dp"
+        android:layout_height="174dp"
+        android:contentDescription="Walo Mascot"
+        android:src="@drawable/walobluebg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Greeting Text -->
     <TextView
+        android:id="@+id/greeting_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Dashboard Screen"
-        android:textSize="24sp"
-        android:layout_gravity="center"/>
+        android:layout_marginTop="8dp"
+        android:text="Hi _____, here’s your weekly summary!"
+        android:textColor="@color/bold_text_color"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/walo_mascot" />
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
