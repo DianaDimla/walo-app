@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <EditText
+        android:id="@+id/dialog_expense_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Amount (€)"
+        android:inputType="numberDecimal" />
+
+    <Spinner
+        android:id="@+id/dialog_expense_category"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" />
+
+    <EditText
+        android:id="@+id/dialog_expense_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Note (optional)"
+        android:inputType="text" />
+
+</LinearLayout>

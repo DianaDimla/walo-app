@@ -1,18 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- The root is now the ConstraintLayout, ScrollView has been removed -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.fragments.AddTransactionFragment">
+    android:padding="20dp">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- Amount Display / Input Trigger -->
     <TextView
+        android:id="@+id/amount_display"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="€0.00"
+        android:textColor="@color/input_box_tint"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Action Buttons -->
+    <Button
+        android:id="@+id/btn_save_expense"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:text="-"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toStartOf="@+id/btn_save_income"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/amount_display" />
+
+    <Button
+        android:id="@+id/btn_save_income"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:text="+"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_save_expense"
+        app:layout_constraintTop_toTopOf="@+id/btn_save_expense" />
+
+    <!-- Expense History -->
+    <TextView
+        android:id="@+id/history_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Transaction Screen"
-        android:textSize="24sp"
-        android:textColor="@color/bold_text_color"
-        android:layout_gravity="center"/>
+        android:text="Expense History"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@+id/btn_save_expense"
+        app:layout_constraintStart_toStartOf="parent" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/expense_history_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp" 
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/history_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_transaction"/>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
