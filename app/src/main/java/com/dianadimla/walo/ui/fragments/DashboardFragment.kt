@@ -1,6 +1,7 @@
 package com.dianadimla.walo.ui.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import com.dianadimla.walo.R
 import com.dianadimla.walo.databinding.FragmentDashboardBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Locale
 
 class DashboardFragment : Fragment() {
 
@@ -46,6 +48,26 @@ class DashboardFragment : Fragment() {
 
         // --- Data Fetching Logic ---
         fetchAndDisplayUserData()
+        listenForTotalBudget()
+    }
+
+    private fun listenForTotalBudget() {
+        val userId = auth.currentUser?.uid ?: return
+
+        firestore.collection("users").document(userId).collection("pods")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("DashboardFragment", "Listen for total budget failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val totalBudget = snapshot.documents.sumOf { doc ->
+                        doc.getDouble("balance") ?: 0.0
+                    }
+                    binding.dashboardAmountDisplay.text = String.format(Locale.getDefault(), "€%.2f", totalBudget)
+                }
+            }
     }
 
     private fun fetchAndDisplayUserData() {

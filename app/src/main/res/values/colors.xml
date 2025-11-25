@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App-wide colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
-    <!-- Wireframe Colors -->
+
+    <!-- Original Theme Colors -->
     <color name="app_background">#E5F0FF</color>
     <color name="input_box_tint">#005BA6</color>
     <color name="button_color">#91B48E</color>
     <color name="bold_text_color">#285731</color>
-    
-    <!-- Navigation Bar -->
     <color name="nav_bar_blue">#CDE0F7</color>
+
+    <!-- Pod Customizations -->
+    <color name="pod_background_blue">#A3BBDE</color>
+
+    <!-- Progress Bar Colors (Added for Pods feature) -->
+    <color name="progress_green">#4CAF50</color>
+    <color name="progress_yellow">#FFEB3B</color>
+    <color name="progress_red">#F44336</color>
 </resources>

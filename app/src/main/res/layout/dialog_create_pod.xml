@@ -1,36 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="24dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add to Pod"
+        android:text="Create New Pod"
         android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
-
-    <Spinner
-        android:id="@+id/pod_spinner_income"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:layout_marginBottom="8dp" />
+        android:textStyle="bold" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editBudgetAmount"
+            android:id="@+id/pod_name_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Amount to add (€)"
-            android:inputType="numberDecimal" />
+            android:hint="Pod Name (e.g., Food, Travel)" />
 
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Buttons will be handled by the AlertDialog builder in the fragment -->
 
 </LinearLayout>

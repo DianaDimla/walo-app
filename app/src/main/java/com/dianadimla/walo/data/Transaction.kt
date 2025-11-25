@@ -17,5 +17,9 @@ data class Transaction(
     // A boolean flag indicating if this is an expense (true) or income (false).
     val expense: Boolean = true, 
     // The timestamp of when the transaction was created. Annotated to be set by the server.
-    @ServerTimestamp val timestamp: Date? = null
+    @ServerTimestamp val timestamp: Date? = null,
+    // The ID of the pod this transaction belongs to.
+    val podId: String? = null,
+    // The name of the pod this transaction belongs to.
+    val podName: String? = null
 )

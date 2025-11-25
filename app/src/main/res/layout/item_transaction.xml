@@ -17,6 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Category"
+            android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -25,6 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Note about the transaction"
+            android:textColor="@color/black"
             android:textSize="14sp"
             android:ellipsize="end"
             android:maxLines="1"/>
@@ -36,7 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="-€50.00"
-        android:textColor="@android:color/holo_red_dark"
         android:textSize="16sp"
         android:textStyle="bold" />
 

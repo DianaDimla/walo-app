@@ -25,17 +25,25 @@ class TransactionAdapter : ListAdapter<Transaction, TransactionAdapter.Transacti
 
     class TransactionViewHolder(private val binding: ItemTransactionBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(transaction: Transaction) {
-            binding.transactionCategoryText.text = transaction.category
+            binding.transactionCategoryText.text = transaction.podName ?: transaction.category
             binding.transactionNoteText.text = transaction.note ?: ""
 
-            val currencyFormat = NumberFormat.getCurrencyInstance(Locale.GERMANY) // For Euro format like €50.00
+            val currencyFormat = NumberFormat.getCurrencyInstance(Locale.GERMANY)
             val formattedAmount = currencyFormat.format(transaction.amount)
 
-            // For now, we are only showing expenses, so it will always be negative.
-            binding.transactionAmountText.text = "-${formattedAmount}"
-            binding.transactionAmountText.setTextColor(
-                ContextCompat.getColor(binding.root.context, android.R.color.holo_red_dark)
-            )
+            if (transaction.expense) {
+                // It's an EXPENSE, show as negative and red
+                binding.transactionAmountText.text = "-${formattedAmount}"
+                binding.transactionAmountText.setTextColor(
+                    ContextCompat.getColor(binding.root.context, android.R.color.holo_red_dark)
+                )
+            } else {
+                // It's an INCOME, show as positive and green
+                binding.transactionAmountText.text = "+${formattedAmount}"
+                binding.transactionAmountText.setTextColor(
+                    ContextCompat.getColor(binding.root.context, android.R.color.holo_green_dark)
+                )
+            }
         }
     }
 

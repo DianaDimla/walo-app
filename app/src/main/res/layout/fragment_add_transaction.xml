@@ -44,22 +44,72 @@
         app:layout_constraintStart_toEndOf="@+id/btn_save_expense"
         app:layout_constraintTop_toTopOf="@+id/btn_save_expense" />
 
-    <!-- Expense History -->
+    <!-- Pods Section -->
     <TextView
-        android:id="@+id/history_title"
+        android:id="@+id/pods_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Expense History"
+        android:text="Pods"
+        android:textColor="@color/bold_text_color"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginTop="32dp"
         app:layout_constraintTop_toBottomOf="@+id/btn_save_expense"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <Button
+        android:id="@+id/btn_edit_pod"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/pods_title"
+        app:layout_constraintBottom_toBottomOf="@+id/pods_title"/>
+
+    <Button
+        android:id="@+id/btn_add_pod"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        android:layout_marginEnd="8dp"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/btn_edit_pod"
+        app:layout_constraintTop_toTopOf="@+id/pods_title"
+        app:layout_constraintBottom_toBottomOf="@+id/pods_title"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/pods_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/pods_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_pod"
+        tools:itemCount="3"/>
+
+    <!-- Expense History -->
+    <TextView
+        android:id="@+id/history_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Expense History"
+        android:textColor="@color/bold_text_color"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@+id/pods_recycler_view"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/expense_history_recycler_view"
         android:layout_width="0dp"
-        android:layout_height="0dp" 
+        android:layout_height="0dp"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/history_title"
         app:layout_constraintStart_toStartOf="parent"
