@@ -8,5 +8,6 @@ data class Pod(
     var id: String = "",
     val name: String = "",
     var balance: Double = 0.0,
-    var startingBalance: Double = 0.0
+    var startingBalance: Double = 0.0,
+    val icon: String = "💰"
 ) : Parcelable

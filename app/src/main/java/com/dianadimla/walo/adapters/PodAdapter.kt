@@ -25,11 +25,13 @@ class PodAdapter : ListAdapter<Pod, PodAdapter.PodViewHolder>(PodDiffCallback())
     }
 
     class PodViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val iconTextView: TextView = itemView.findViewById(R.id.pod_icon_text)
         private val nameTextView: TextView = itemView.findViewById(R.id.pod_name_text)
         private val amountTextView: TextView = itemView.findViewById(R.id.pod_amount_text)
         private val progressBar: ProgressBar = itemView.findViewById(R.id.pod_progress_bar)
 
         fun bind(pod: Pod) {
+            iconTextView.text = pod.icon
             nameTextView.text = pod.name
             amountTextView.text = String.format("€%.2f", pod.balance)
 

@@ -13,7 +13,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.dianadimla.walo.R
+import com.dianadimla.walo.adapters.EmojiAdapter
 import com.dianadimla.walo.adapters.PodAdapter
 import com.dianadimla.walo.adapters.TransactionAdapter
 import com.dianadimla.walo.data.Pod
@@ -37,6 +39,10 @@ class AddTransactionFragment : Fragment() {
 
     private val db = Firebase.firestore
     private val currentUser = Firebase.auth.currentUser
+
+    private val defaultEmojis = listOf(
+        "💰", "🛒", "✈️", "🏠", "🍔", "🚗", "🎁", "🎓", "🏥", "👕", "🎉", "💡"
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,16 +78,10 @@ class AddTransactionFragment : Fragment() {
 
     private fun setupRecyclerViews() {
         transactionAdapter = TransactionAdapter()
-        binding.expenseHistoryRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = transactionAdapter
-        }
+        binding.expenseHistoryRecyclerView.adapter = transactionAdapter
 
         podAdapter = PodAdapter()
-        binding.podsRecyclerView.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = podAdapter
-        }
+        binding.podsRecyclerView.adapter = podAdapter
     }
 
     private fun listenForPods() {
@@ -111,13 +111,25 @@ class AddTransactionFragment : Fragment() {
     private fun showCreatePodDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_pod, null)
         val podNameInput = dialogView.findViewById<EditText>(R.id.pod_name_input)
+        val emojiRecyclerView = dialogView.findViewById<RecyclerView>(R.id.emoji_recycler_view)
+
+        var selectedEmoji = defaultEmojis[0]
+
+        val emojiAdapter = EmojiAdapter(defaultEmojis) { emoji ->
+            selectedEmoji = emoji
+        }
+
+        emojiRecyclerView.apply {
+            layoutManager = GridLayoutManager(requireContext(), 6) // 6 columns for emojis
+            adapter = emojiAdapter
+        }
 
         AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .setPositiveButton("Create") { _, _ ->
                 val name = podNameInput.text.toString().trim()
                 if (name.isNotEmpty()) {
-                    saveNewPod(name)
+                    saveNewPod(name, selectedEmoji)
                 } else {
                     Toast.makeText(requireContext(), "Pod name cannot be empty", Toast.LENGTH_SHORT).show()
                 }
@@ -126,10 +138,11 @@ class AddTransactionFragment : Fragment() {
             .show()
     }
 
-    private fun saveNewPod(podName: String) {
+    private fun saveNewPod(podName: String, icon: String) {
         val uid = currentUser?.uid ?: return
-        val newPodRef = db.collection("users").document(uid).collection("pods").document()
-        val pod = Pod(id = newPodRef.id, name = podName, balance = 0.0, startingBalance = 0.0)
+        val newPodRef = db.collection("users").document(uid).collection(
+            "pods").document()
+        val pod = Pod(id = newPodRef.id, name = podName, icon = icon, balance = 0.0, startingBalance = 0.0)
 
         newPodRef.set(pod)
             .addOnSuccessListener { Toast.makeText(requireContext(), "Pod '$podName' created!", Toast.LENGTH_SHORT).show() }

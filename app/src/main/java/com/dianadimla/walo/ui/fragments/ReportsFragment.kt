@@ -1,60 +1,133 @@
 package com.dianadimla.walo.ui.fragments
 
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import com.dianadimla.walo.R
+import com.dianadimla.walo.data.Pod
+import com.dianadimla.walo.databinding.FragmentReportsBinding
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ReportsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ReportsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var _binding: FragmentReportsBinding? = null
+    private val binding get() = _binding!!
+
+    private val db = Firebase.firestore
+    private val currentUser = Firebase.auth.currentUser
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_reports, container, false)
+    ): View {
+        _binding = FragmentReportsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ReportsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ReportsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        listenForPodUpdates()
+    }
+
+    private fun listenForPodUpdates() {
+        val uid = currentUser?.uid ?: return
+
+        db.collection("users").document(uid).collection("pods")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("ReportsFragment", "Listen for pods failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val pods = snapshot.toObjects(Pod::class.java)
+                    setupBarChart(pods)
+                } else {
+                    Log.d("ReportsFragment", "No pods found.")
+                    binding.barChart.clear() // Clear chart if no pods exist
+                    binding.barChart.invalidate()
                 }
             }
+    }
+
+    private fun setupBarChart(pods: List<Pod>) {
+        val entries = ArrayList<BarEntry>()
+        val labels = ArrayList<String>()
+        val barColors = ArrayList<Int>()
+        var index = 0f
+        
+        val sortedPods = pods.sortedBy { it.name }
+
+        sortedPods.forEach { pod ->
+            entries.add(BarEntry(index, pod.balance.toFloat())) // Use the current balance for bar height
+            labels.add(pod.name)
+
+            // Calculate progress based on remaining balance (same as PodAdapter)
+            val progress = if (pod.startingBalance > 0) {
+                (pod.balance / pod.startingBalance * 100).toInt()
+            } else {
+                0 // If starting balance is zero, progress is zero
+            }
+            barColors.add(getProgressBarColor(progress)) // Get color based on progress
+            index++
+        }
+
+        val dataSet = BarDataSet(entries, "Pod Balances")
+        dataSet.colors = barColors // Use the dynamic colors
+        dataSet.valueTextColor = Color.BLACK
+        dataSet.valueTextSize = 12f
+
+        val barData = BarData(dataSet)
+
+        binding.barChart.apply {
+            this.data = barData
+            description.isEnabled = false
+            legend.isEnabled = false
+
+            // Disable all zooming and scaling gestures
+            setScaleEnabled(false)
+            isDoubleTapToZoomEnabled = false
+
+            // X-Axis styling
+            xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+            xAxis.position = XAxis.XAxisPosition.BOTTOM
+            xAxis.setDrawGridLines(false)
+            xAxis.granularity = 1f
+            xAxis.isGranularityEnabled = true
+
+            // Y-Axis styling
+            axisLeft.axisMinimum = 0f
+            axisRight.isEnabled = false
+
+            animateY(1000) // Add a little animation
+            invalidate()
+        }
+    }
+
+    // Helper function to determine color based on budget progress
+    private fun getProgressBarColor(progress: Int): Int {
+        val colorRes = when {
+            progress > 50 -> R.color.progress_green
+            progress > 25 -> R.color.progress_yellow
+            else -> R.color.progress_red
+        }
+        return ContextCompat.getColor(requireContext(), colorRes)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
