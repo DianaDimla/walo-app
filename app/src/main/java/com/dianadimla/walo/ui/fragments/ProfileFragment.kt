@@ -35,6 +35,9 @@ class ProfileFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         sharedPrefs = requireContext().getSharedPreferences("WaloPrefs", Context.MODE_PRIVATE)
 
+        // The profile information is now a static placeholder.
+        // TODO: Implement profile editing and data loading in the future.
+
         binding.logoutButton.setOnClickListener {
             // Sign the user out of their Firebase session.
             auth.signOut()
