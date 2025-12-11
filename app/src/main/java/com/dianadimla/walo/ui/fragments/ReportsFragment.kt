@@ -22,12 +22,15 @@ import com.google.firebase.ktx.Firebase
 
 class ReportsFragment : Fragment() {
 
+    // View binding
     private var _binding: FragmentReportsBinding? = null
     private val binding get() = _binding!!
 
+    // Firebase
     private val db = Firebase.firestore
     private val currentUser = Firebase.auth.currentUser
 
+    // Inflate the layout
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,11 +39,13 @@ class ReportsFragment : Fragment() {
         return binding.root
     }
 
+    // View created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         listenForPodUpdates()
     }
 
+    // Listen for pod updates
     private fun listenForPodUpdates() {
         val uid = currentUser?.uid ?: return
 
@@ -56,12 +61,13 @@ class ReportsFragment : Fragment() {
                     setupBarChart(pods)
                 } else {
                     Log.d("ReportsFragment", "No pods found.")
-                    binding.barChart.clear() // Clear chart if no pods exist
+                    binding.barChart.clear() // Clear chart
                     binding.barChart.invalidate()
                 }
             }
     }
 
+    // Set up the bar chart
     private fun setupBarChart(pods: List<Pod>) {
         val entries = ArrayList<BarEntry>()
         val labels = ArrayList<String>()
@@ -71,21 +77,21 @@ class ReportsFragment : Fragment() {
         val sortedPods = pods.sortedBy { it.name }
 
         sortedPods.forEach { pod ->
-            entries.add(BarEntry(index, pod.balance.toFloat())) // Use the current balance for bar height
+            entries.add(BarEntry(index, pod.balance.toFloat())) // Use current balance
             labels.add(pod.name)
 
-            // Calculate progress based on remaining balance (same as PodAdapter)
+            // Calculate progress
             val progress = if (pod.startingBalance > 0) {
                 (pod.balance / pod.startingBalance * 100).toInt()
             } else {
-                0 // If starting balance is zero, progress is zero
+                0 // Progress is zero if starting balance is zero
             }
-            barColors.add(getProgressBarColor(progress)) // Get color based on progress
+            barColors.add(getProgressBarColor(progress)) // Get color
             index++
         }
 
         val dataSet = BarDataSet(entries, "Pod Balances")
-        dataSet.colors = barColors // Use the dynamic colors
+        dataSet.colors = barColors // Use dynamic colors
         dataSet.valueTextColor = Color.BLACK
         dataSet.valueTextSize = 12f
 
@@ -96,27 +102,27 @@ class ReportsFragment : Fragment() {
             description.isEnabled = false
             legend.isEnabled = false
 
-            // Disable all zooming and scaling gestures
+            // Disable zooming
             setScaleEnabled(false)
             isDoubleTapToZoomEnabled = false
 
-            // X-Axis styling
+            // X-Axis style
             xAxis.valueFormatter = IndexAxisValueFormatter(labels)
             xAxis.position = XAxis.XAxisPosition.BOTTOM
             xAxis.setDrawGridLines(false)
             xAxis.granularity = 1f
             xAxis.isGranularityEnabled = true
 
-            // Y-Axis styling
+            // Y-Axis style
             axisLeft.axisMinimum = 0f
             axisRight.isEnabled = false
 
-            animateY(1000) // Add a little animation
+            animateY(1000) // Animate
             invalidate()
         }
     }
 
-    // Helper function to determine color based on budget progress
+    // Get progress bar color
     private fun getProgressBarColor(progress: Int): Int {
         val colorRes = when {
             progress > 50 -> R.color.progress_green
@@ -126,6 +132,7 @@ class ReportsFragment : Fragment() {
         return ContextCompat.getColor(requireContext(), colorRes)
     }
 
+    // Destroy view
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

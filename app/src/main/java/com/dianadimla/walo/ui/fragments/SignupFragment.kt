@@ -18,13 +18,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class SignupFragment : Fragment() {
 
+    // View binding
     private var _binding: FragmentSignupBinding? = null
     private val binding get() = _binding!!
 
+    // Firebase authentication and Firestore
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var sharedPrefs: SharedPreferences
 
+    // Inflate the layout
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -34,15 +37,18 @@ class SignupFragment : Fragment() {
         return binding.root
     }
 
+    // View created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
         sharedPrefs = requireContext().getSharedPreferences("WaloPrefs", Context.MODE_PRIVATE)
 
+        // Start animation
         val swimAnimation = AnimationUtils.loadAnimation(context, R.anim.slow_swim)
         binding.appLogoSignup.startAnimation(swimAnimation)
 
+        // Signup button click listener
         binding.signupButton.setOnClickListener {
             val firstName = binding.firstNameEditText.text.toString().trim()
             val lastName = binding.lastNameEditText.text.toString().trim()
@@ -50,27 +56,33 @@ class SignupFragment : Fragment() {
             val password = binding.passwordEditText.text.toString().trim()
             val confirmPassword = binding.confirmPasswordEditText.text.toString().trim()
 
+            // Validate first name
             if (firstName.isEmpty()) {
                 binding.firstNameEditText.error = "First Name is required"
                 return@setOnClickListener
             }
+            // Validate last name
             if (lastName.isEmpty()) {
                 binding.lastNameEditText.error = "Last Name is required"
                 return@setOnClickListener
             }
+            // Validate email
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 binding.emailEditText.error = "Invalid Email"
                 return@setOnClickListener
             }
+            // Validate password length
             if (password.length < 6) {
                 binding.passwordEditText.error = "Password must be at least 6 characters"
                 return@setOnClickListener
             }
+            // Validate password confirmation
             if (password != confirmPassword) {
                 binding.confirmPasswordEditText.error = "Passwords do not match"
                 return@setOnClickListener
             }
 
+            // Create user with email and password
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -81,27 +93,31 @@ class SignupFragment : Fragment() {
                             "email" to email
                         )
 
+                        // Save user data to Firestore
                         firestore.collection("users").document(userId).set(user)
                             .addOnSuccessListener {
                                 sharedPrefs.edit().putBoolean("rememberMe", true).apply()
                                 findNavController().navigate(R.id.action_signup_to_home)
                             }
                             .addOnFailureListener { e ->
-                                Toast.makeText(context, "Failed to save user data: ${e.message}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Failed to save user data: ${'$'}{e.message}", Toast.LENGTH_LONG).show()
                             }
                     } else {
-                        Toast.makeText(context, "Signup failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        // Show error toast
+                        Toast.makeText(context, "Signup failed: ${'$'}{task.exception?.message}", Toast.LENGTH_LONG).show()
                     }
                 }
         }
 
+        // Go to login text click listener
         binding.goToLoginText.setOnClickListener {
             findNavController().navigate(R.id.action_signup_to_login)
         }
     }
 
+    // Destroy view
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        _binding = null // Avoid memory leaks
     }
 }

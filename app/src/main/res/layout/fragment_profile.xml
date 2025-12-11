@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The root layout for the user profile screen. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -13,7 +14,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Profile Information Card -->
+        <!-- A card to display the user's profile information. -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,6 +28,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- A TextView to display the user's name. -->
                 <TextView
                     android:id="@+id/profile_name"
                     android:layout_width="wrap_content"
@@ -35,6 +37,7 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
+                <!-- A TextView to display the user's email. -->
                 <TextView
                     android:id="@+id/profile_email"
                     android:layout_width="wrap_content"
@@ -42,6 +45,7 @@
                     android:text="user.email@example.com"
                     android:textSize="16sp" />
 
+                <!-- A placeholder for future profile editing functionality. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -54,7 +58,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Notifications Card -->
+        <!-- A card for managing notification preferences. -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -69,6 +73,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- The title for the notifications section. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -76,7 +81,7 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
-                <!-- TODO: Enable notifications when backend is ready -->
+                <!-- A disabled switch for transaction notifications. -->
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -84,6 +89,7 @@
                     android:checked="false"
                     android:enabled="false"/>
 
+                <!-- A disabled switch for spending alerts. -->
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -91,6 +97,7 @@
                     android:checked="false"
                     android:enabled="false"/>
 
+                <!-- A disabled switch for weekly summary notifications. -->
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -98,6 +105,7 @@
                     android:checked="false"
                     android:enabled="false"/>
 
+                <!-- A disabled switch for goal reminders. -->
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -105,6 +113,7 @@
                     android:checked="false"
                     android:enabled="false"/>
 
+                <!-- A note indicating that notification preferences are not yet available. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -118,7 +127,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- About Card -->
+        <!-- A card displaying information about the application. -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -133,6 +142,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- The title for the about section. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -140,27 +150,30 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
+                <!-- The application version number. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Version 0.5" />
 
+                <!-- The creator of the application. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Created by: Diana Dimla" />
 
+                <!-- A short description of the application. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Walo – Student Finance Helper" />
+                    android.text="Walo – Student Finance Helper" />
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Logout Button -->
+        <!-- A card containing the logout button. -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -169,6 +182,7 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp">
 
+            <!-- A button to log the user out of the application. -->
             <Button
                 android:id="@+id/logoutButton"
                 android:layout_width="match_parent"

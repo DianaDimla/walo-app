@@ -14,12 +14,15 @@ import com.google.firebase.auth.FirebaseAuth
 
 class ProfileFragment : Fragment() {
 
+    // View binding
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
+    // Firebase authentication
     private lateinit var auth: FirebaseAuth
     private lateinit var sharedPrefs: SharedPreferences
 
+    // Inflate the layout
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -29,30 +32,31 @@ class ProfileFragment : Fragment() {
         return binding.root
     }
 
+    // View created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
         sharedPrefs = requireContext().getSharedPreferences("WaloPrefs", Context.MODE_PRIVATE)
 
-        // The profile information is now a static placeholder.
-        // TODO: Implement profile editing and data loading in the future.
+        // Static placeholder for profile information
 
+        // Logout button click listener
         binding.logoutButton.setOnClickListener {
-            // Sign the user out of their Firebase session.
+            // Sign out from Firebase
             auth.signOut()
 
-            // Clear the "Remember Me" preference so the user is not automatically logged in next time.
+            // Clear "Remember Me" preference
             sharedPrefs.edit().putBoolean("rememberMe", false).apply()
 
-            // Navigate back to the login screen. The action is configured to clear the
-            // entire back stack, so the user cannot press "back" to return to the dashboard.
+            // Navigate to login screen
             findNavController().navigate(R.id.action_profile_to_login)
         }
     }
 
+    // Destroy view
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // Avoid memory leaks by cleaning up the binding reference
+        _binding = null // Avoid memory leaks
     }
 }

@@ -1,13 +1,10 @@
 package com.dianadimla.walo.data
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
+// Represents a single spending pod.
 data class Pod(
-    var id: String = "",
-    val name: String = "",
-    var balance: Double = 0.0,
-    var startingBalance: Double = 0.0,
-    val icon: String = "💰"
-) : Parcelable
+    val id: String = "", // The unique ID of the pod.
+    val name: String = "", // The name of the pod.
+    var balance: Double = 0.0, // The current balance of the pod.
+    var startingBalance: Double = 0.0, // The initial balance of the pod.
+    val icon: String = "" // The emoji icon for the pod.
+)

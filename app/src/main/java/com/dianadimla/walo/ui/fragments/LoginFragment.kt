@@ -17,12 +17,15 @@ import com.google.firebase.auth.FirebaseAuth
 
 class LoginFragment : Fragment() {
 
+    // View binding
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
+    // Firebase authentication
     private lateinit var auth: FirebaseAuth
     private lateinit var sharedPrefs: SharedPreferences
 
+    // Inflate the layout
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -32,60 +35,63 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
+    // View created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         auth = FirebaseAuth.getInstance()
-        // Initialize SharedPreferences for "Remember Me" functionality
+        // Initialize SharedPreferences
         sharedPrefs = requireContext().getSharedPreferences("WaloPrefs", Context.MODE_PRIVATE)
 
-        // Start the swimming animation on the logo
+        // Start animation
         val swimAnimation = AnimationUtils.loadAnimation(context, R.anim.slow_swim)
         binding.appLogo.startAnimation(swimAnimation)
 
-        // If the user is already logged in and the "Remember Me" flag is set,
-        // navigate directly to the main dashboard.
+        // Check if user is already logged in
         if (auth.currentUser != null && sharedPrefs.getBoolean("rememberMe", false)) {
             findNavController().navigate(R.id.action_login_to_home)
         }
 
+        // Login button click listener
         binding.loginButton.setOnClickListener {
             val email = binding.emailEditText.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
             val rememberMe = binding.rememberMeCheckBox.isChecked
 
-            // Basic email and password validation
+            // Validate email
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 binding.emailEditText.error = "Invalid Email"
                 return@setOnClickListener
             }
+            // Validate password
             if (password.isEmpty()) {
                 binding.passwordEditText.error = "Enter password"
                 return@setOnClickListener
             }
 
-            // Attempt to sign in with Firebase Authentication
+            // Firebase sign in
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // If login is successful, save the "Remember Me" preference
+                        // Save "Remember Me" preference
                         sharedPrefs.edit().putBoolean("rememberMe", rememberMe).apply()
-                        // Navigate to the main dashboard, clearing the back stack
+                        // Navigate to home screen
                         findNavController().navigate(R.id.action_login_to_home)
                     } else {
-                        // If login fails, show an error message to the user
-                        Toast.makeText(context, "Login failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        // Show error toast
+                        Toast.makeText(context, "Login failed: ${'$'}{task.exception?.message}", Toast.LENGTH_LONG).show()
                     }
                 }
         }
 
-        // Navigate to the signup screen if the user doesn't have an account
+        // Go to signup text click listener
         binding.goToSignupText.setOnClickListener {
             findNavController().navigate(R.id.action_login_to_signup)
         }
     }
 
+    // Destroy view
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // Avoid memory leaks by cleaning up the binding reference
+        _binding = null // Avoid memory leaks
     }
 }

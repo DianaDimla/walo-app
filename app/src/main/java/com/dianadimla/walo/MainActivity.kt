@@ -21,10 +21,10 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setupWithNavController(navController)
 
-        // This listener handles the visibility of the bottom navigation bar
+        // This listener handles the visibility of the bottom navigation bar.
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                // List of main destinations where the bottom navigation should be visible.
+                // List of the bottom navigation
                 R.id.dashboardFragment,
                 R.id.addTransactionFragment,
                 R.id.reportsFragment,
