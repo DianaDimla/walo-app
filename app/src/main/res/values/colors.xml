@@ -19,6 +19,9 @@
     <color name="progress_yellow">#FFEB3B</color>
     <color name="progress_red">#F44336</color>
 
+    <!-- Pastel Colors -->
+    <color name="pastel_yellow">#FFF9C4</color>
+
     <!-- Placeholder Text Color -->
     <color name="placeholder_text_color">#8A8A8A</color>
 </resources>

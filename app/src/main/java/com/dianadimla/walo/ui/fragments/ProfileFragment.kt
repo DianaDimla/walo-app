@@ -39,7 +39,16 @@ class ProfileFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         sharedPrefs = requireContext().getSharedPreferences("WaloPrefs", Context.MODE_PRIVATE)
 
-        // Static placeholder for profile information
+        // Get the current user
+        val currentUser = auth.currentUser
+
+        // Update the UI with the user's information
+        currentUser?.let { user ->
+            // Use displayName if available, otherwise use email prefix
+            val nameToShow = user.displayName ?: user.email?.substringBefore("@") ?: "User"
+            binding.profileName.text = nameToShow
+            binding.profileEmail.text = user.email
+        }
 
         // Logout button click listener
         binding.logoutButton.setOnClickListener {

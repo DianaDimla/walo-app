@@ -33,26 +33,20 @@
                     android:id="@+id/profile_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="User Name"
+                    tools:text="User Name"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@color/bold_text_color" />
 
                 <!-- A TextView to display the user's email. -->
                 <TextView
                     android:id="@+id/profile_email"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="user.email@example.com"
-                    android:textSize="16sp" />
+                    tools:text="user.email@example.com"
+                    android:textSize="16sp"
+                    android:textColor="@color/input_box_tint" />
 
-                <!-- A placeholder for future profile editing functionality. -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Change Profile Details (Coming Soon)"
-                    android:textColor="@color/placeholder_text_color"
-                    android:textStyle="italic" />
 
             </LinearLayout>
 
@@ -79,7 +73,8 @@
                     android:layout_height="wrap_content"
                     android:text="Notifications"
                     android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@color/bold_text_color" />
 
                 <!-- A disabled switch for transaction notifications. -->
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -148,50 +143,46 @@
                     android:layout_height="wrap_content"
                     android:text="About"
                     android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@color/bold_text_color" />
 
                 <!-- The application version number. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Version 0.5" />
+                    android:text="Version 0.5"
+                    android:textColor="@color/input_box_tint" />
 
                 <!-- The creator of the application. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Created by: Diana Dimla" />
+                    android:text="Created by: Diana Dimla"
+                    android:textColor="@color/input_box_tint" />
 
                 <!-- A short description of the application. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android.text="Walo – Student Finance Helper" />
+                    android:text="Walo – Student Finance Helper"
+                    android:textColor="@color/input_box_tint" />
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- A card containing the logout button. -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- A button to log the user out of the application. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/logoutButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
-
-            <!-- A button to log the user out of the application. -->
-            <Button
-                android:id="@+id/logoutButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Logout"
-                app:backgroundTint="@color/bold_text_color"
-                android:textColor="@android:color/white"/>
-
-        </com.google.android.material.card.MaterialCardView>
+            android:text="Logout"
+            app:backgroundTint="@color/bold_text_color"
+            android:textColor="@android:color/white"
+            app:cornerRadius="12dp"
+            app:elevation="4dp"/>
 
     </LinearLayout>
 

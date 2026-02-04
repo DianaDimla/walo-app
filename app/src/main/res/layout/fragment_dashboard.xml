@@ -139,7 +139,8 @@
                     android:layout_gravity="center_horizontal"
                     android:text="Spending Breakdown (Coming Soon)"
                     android:textStyle="bold"
-                    android:textSize="18sp"/>
+                    android:textSize="18sp"
+                    android:textColor="@color/bold_text_color"/>
 
                 <View
                     android:layout_width="150dp"
@@ -157,14 +158,15 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Placeholder 2: Recent Transactions -->
+        <!-- Recent Transactions Section -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/recent_transactions_placeholder_card"
+            android:id="@+id/recent_transactions_card"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="#FFFFFF"
+            app:cardBackgroundColor="@color/pastel_yellow"
             app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
             app:layout_constraintTop_toBottomOf="@id/spending_breakdown_placeholder_card"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -180,19 +182,25 @@
                     android:layout_height="wrap_content"
                     android:text="Recent Transactions"
                     android:textStyle="bold"
-                    android:textSize="18sp"/>
+                    android:textSize="18sp"
+                    android:textColor="@color/bold_text_color"
+                    android:layout_marginBottom="8dp"/>
 
-                <!-- TODO: Connect real data later -->
-                <include layout="@layout/item_transaction_placeholder"/>
-                <include layout="@layout/item_transaction_placeholder"/>
-                <include layout="@layout/item_transaction_placeholder"/>
-                <include layout="@layout/item_transaction_placeholder"/>
-
-                <Button
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recent_transactions_recycler_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="View All (Coming Soon)"/>
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/item_transaction"/>
+
+                <Button
+                    android:id="@+id/btn_view_all_transactions"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="View All"
+                    android:textColor="@color/bold_text_color"/>
 
             </LinearLayout>
 

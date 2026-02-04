@@ -14,12 +14,15 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.dianadimla.walo.R
+import com.dianadimla.walo.adapters.TransactionAdapter
 import com.dianadimla.walo.data.Pod
 import com.dianadimla.walo.data.Transaction
 import com.dianadimla.walo.databinding.FragmentDashboardBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import java.util.Date
 import java.util.Locale
 
@@ -35,6 +38,9 @@ class DashboardFragment : Fragment() {
     // Local cache of the user's pods, populated by a real-time listener.
     private val podList = mutableListOf<Pod>()
 
+    // Adapter for the recent transactions
+    private lateinit var transactionAdapter: TransactionAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,6 +54,9 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
+
+        // Setup RecyclerView for recent transactions
+        setupRecyclerView()
 
         // Start animation
         val swimAnimation = AnimationUtils.loadAnimation(context, R.anim.slow_swim)
@@ -63,11 +72,44 @@ class DashboardFragment : Fragment() {
         binding.btnSaveExpenseDashboard.setOnClickListener {
             showExpenseDialog()
         }
+        binding.btnViewAllTransactions.setOnClickListener {
+            // Navigates to the AddTransactionFragment where the full history is
+            findNavController().navigate(R.id.addTransactionFragment)
+        }
 
         // Fetch initial data and set up real-time listeners.
         fetchAndDisplayUserData()
         listenForTotalBudget()
         listenForPods()
+        listenForRecentTransactions()
+    }
+
+    private fun setupRecyclerView() {
+        transactionAdapter = TransactionAdapter()
+        binding.recentTransactionsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = transactionAdapter
+            // Disable nested scrolling to let NestedScrollView handle it
+            isNestedScrollingEnabled = false
+        }
+    }
+
+    // Sets up a real time listener for the latest 5 transactions
+    private fun listenForRecentTransactions() {
+        val uid = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(uid).collection("transactions")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(5) // Just show the top 5 on the dashboard
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("DashboardFragment", "Listen for recent transactions failed.", e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val transactions = snapshot.documents.mapNotNull { it.toObject(Transaction::class.java)?.copy(id = it.id) }
+                    transactionAdapter.submitList(transactions)
+                }
+            }
     }
 
     // Sets up a real time listener to keep the local pod list in sync with Firestore.
