@@ -27,8 +27,8 @@ class MainActivity : AppCompatActivity() {
                 // List of the bottom navigation
                 R.id.dashboardFragment,
                 R.id.addTransactionFragment,
-                R.id.reportsFragment,
-                R.id.profileFragment -> {
+                R.id.goalsFragment,
+                R.id.reportsFragment -> {
                     bottomNavigationView.visibility = View.VISIBLE
                 }
                 // Hide the bottom navigation on all other screens (e.g., login, signup).

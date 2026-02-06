@@ -12,13 +12,13 @@
         android:title="Add" />
 
     <item
+        android:id="@+id/goalsFragment"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:title="Goals" />
+
+    <item
         android:id="@+id/reportsFragment"
         android:icon="@android:drawable/ic_menu_report_image"
         android:title="Reports" />
-
-    <item
-        android:id="@+id/profileFragment"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:title="Profile" />
 
 </menu>

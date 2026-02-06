@@ -50,6 +50,11 @@ class ProfileFragment : Fragment() {
             binding.profileEmail.text = user.email
         }
 
+        // Back button click listener
+        binding.btnBackProfile.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
         // Logout button click listener
         binding.logoutButton.setOnClickListener {
             // Sign out from Firebase

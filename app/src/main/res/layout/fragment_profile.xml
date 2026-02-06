@@ -14,6 +14,16 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <ImageButton
+            android:id="@+id/btn_back_profile"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_back"
+            app:tint="@color/bold_text_color" />
+
         <!-- A card to display the user's profile information. -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
