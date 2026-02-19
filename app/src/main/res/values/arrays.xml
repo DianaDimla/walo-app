@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="goal_types">
+        <item>Spending</item>
+        <item>Saving</item>
+    </string-array>
+</resources>

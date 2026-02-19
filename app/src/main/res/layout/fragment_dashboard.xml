@@ -48,7 +48,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/walo_mascot" />
 
-        <!-- Budget Summary Card (Existing) -->
+        <!-- Budget Summary Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/budget_summary_card"
             android:layout_width="0dp"
@@ -115,9 +115,9 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Placeholder 1: Spending Breakdown -->
+        <!-- Spending Breakdown Card -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/spending_breakdown_placeholder_card"
+            android:id="@+id/spending_breakdown_card"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -137,22 +137,31 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="Spending Breakdown (Coming Soon)"
+                    android:text="Spending Breakdown"
                     android:textStyle="bold"
                     android:textSize="18sp"
                     android:textColor="@color/bold_text_color"/>
 
-                <View
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/placeholder_circle"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_marginTop="8dp">
 
-                <!-- TODO: Connect real data later -->
-                <include layout="@layout/item_category_placeholder"/>
-                <include layout="@layout/item_category_placeholder"/>
-                <include layout="@layout/item_category_placeholder"/>
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/spending_pie_chart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/empty_state_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="No spending data for this month yet"
+                        android:textColor="@color/bold_text_color"
+                        android:visibility="visible" />
+                </FrameLayout>
 
             </LinearLayout>
 
@@ -167,7 +176,7 @@
             app:cardBackgroundColor="@color/pastel_yellow"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
-            app:layout_constraintTop_toBottomOf="@id/spending_breakdown_placeholder_card"
+            app:layout_constraintTop_toBottomOf="@id/spending_breakdown_card"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 

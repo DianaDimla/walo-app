@@ -1,6 +1,7 @@
 package com.dianadimla.walo.ui.fragments
 
 import android.app.AlertDialog
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,11 +21,16 @@ import com.dianadimla.walo.adapters.TransactionAdapter
 import com.dianadimla.walo.data.Pod
 import com.dianadimla.walo.data.Transaction
 import com.dianadimla.walo.databinding.FragmentDashboardBinding
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.abs
 
 class DashboardFragment : Fragment() {
 
@@ -40,6 +46,13 @@ class DashboardFragment : Fragment() {
 
     // Adapter for the recent transactions
     private lateinit var transactionAdapter: TransactionAdapter
+
+    // Pastel palette (16 colors)
+    private val pastelPalette = listOf(
+        "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF",
+        "#D4A5A5", "#F3E5AB", "#B2E2F2", "#E3D1FB", "#F19CBB",
+        "#C1E1C1", "#FFD1DC", "#ECEAE4", "#A2C4C9", "#C5B4E3", "#F9F1F0"
+    ).map { Color.parseColor(it) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -82,6 +95,7 @@ class DashboardFragment : Fragment() {
         listenForTotalBudget()
         listenForPods()
         listenForRecentTransactions()
+        listenForMonthlySpending()
     }
 
     private fun setupRecyclerView() {
@@ -110,6 +124,73 @@ class DashboardFragment : Fragment() {
                     transactionAdapter.submitList(transactions)
                 }
             }
+    }
+
+    // Listen for all transactions this month to populate the pie chart
+    private fun listenForMonthlySpending() {
+        val uid = auth.currentUser?.uid ?: return
+        
+        // Calculate the start of the current month
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        val startOfMonth = calendar.time
+
+        firestore.collection("users").document(uid).collection("transactions")
+            .whereGreaterThanOrEqualTo("timestamp", startOfMonth)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("DashboardFragment", "Listen for monthly transactions failed.", e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val transactions = snapshot.documents.mapNotNull { it.toObject(Transaction::class.java) }
+                    updateSpendingChart(transactions)
+                }
+            }
+    }
+
+    private fun updateSpendingChart(transactions: List<Transaction>) {
+        // Filter for expenses only and group by category
+        val spendingByCategory = transactions
+            .filter { it.expense }
+            .groupBy { it.category }
+            .mapValues { entry -> entry.value.sumOf { it.amount } }
+
+        if (spendingByCategory.isEmpty()) {
+            binding.spendingPieChart.visibility = View.GONE
+            binding.emptyStateText.visibility = View.VISIBLE
+            return
+        }
+
+        binding.spendingPieChart.visibility = View.VISIBLE
+        binding.emptyStateText.visibility = View.GONE
+
+        val entries = spendingByCategory.map { PieEntry(it.value.toFloat(), it.key) }
+        
+        // Deterministically map each category name to a color in the palette
+        val sliceColors = entries.map { entry ->
+            val index = abs(entry.label.hashCode()) % pastelPalette.size
+            pastelPalette[index]
+        }
+
+        val dataSet = PieDataSet(entries, "").apply {
+            colors = sliceColors
+            valueTextSize = 12f
+            setDrawValues(true)
+        }
+
+        binding.spendingPieChart.apply {
+            data = PieData(dataSet)
+            description.isEnabled = false
+            legend.isEnabled = false
+            setHoleColor(Color.TRANSPARENT)
+            setEntryLabelColor(Color.BLACK)
+            animateY(1000)
+            invalidate()
+        }
     }
 
     // Sets up a real time listener to keep the local pod list in sync with Firestore.

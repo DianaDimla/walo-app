@@ -24,4 +24,8 @@
 
     <!-- Placeholder Text Color -->
     <color name="placeholder_text_color">#8A8A8A</color>
+
+    <!-- Goal Pod Colors -->
+    <color name="goal_dark_green">#1B5E20</color>
+    <color name="add_button_green">#285731</color>
 </resources>
