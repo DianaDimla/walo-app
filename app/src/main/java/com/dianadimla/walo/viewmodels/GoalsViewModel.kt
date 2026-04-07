@@ -11,9 +11,18 @@ class GoalsViewModel : ViewModel() {
     private val _goals = MutableLiveData<List<Goal>>()
     val goals: LiveData<List<Goal>> get() = _goals
 
+    // LiveData to notify fragment about unlocked achievements
+    private val _achievementUnlocked = MutableLiveData<String>()
+    val achievementUnlocked: LiveData<String> get() = _achievementUnlocked
+
     init {
         repository.listenToGoals { receivedGoals ->
             _goals.postValue(receivedGoals)
+        }
+        
+        // Connect repository achievement triggers to ViewModel LiveData
+        repository.setAchievementListener { title ->
+            _achievementUnlocked.postValue(title)
         }
     }
 

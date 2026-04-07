@@ -18,11 +18,65 @@
         <ImageView
             android:id="@+id/profile_icon"
             android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_height="52dp"
             android:src="@drawable/ic_profile"
             android:contentDescription="Profile Settings"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Notification Bell Icon -->
+        <ImageView
+            android:id="@+id/notification_bell"
+            android:layout_width="40dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="AI Nudge History"
+            android:padding="6dp"
+            android:src="@drawable/notification"
+            app:layout_constraintEnd_toStartOf="@id/trophy_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Trophy/Achievements Icon -->
+        <ImageView
+            android:id="@+id/trophy_icon"
+            android:layout_width="50dp"
+            android:layout_height="55dp"
+            android:contentDescription="Achievements"
+            android:padding="9dp"
+            android:src="@drawable/trophy"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Streak Seaweed Overlay -->
+        <FrameLayout
+            android:id="@+id/streak_container"
+            android:layout_width="120dp"
+            android:layout_height="150dp"
+            android:layout_marginEnd="-30dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/walo_mascot"
+            app:layout_constraintEnd_toStartOf="@id/walo_mascot"
+            app:layout_constraintTop_toTopOf="@id/walo_mascot">
+
+            <ImageView
+                android:id="@+id/seaweed_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/seaweed_icon"
+                android:scaleType="centerInside" />
+
+            <TextView
+                android:id="@+id/streak_number_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:text="0"
+                android:textColor="@color/bold_text_color"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </FrameLayout>
 
         <!-- Animated Walo Mascot -->
         <ImageView
@@ -41,7 +95,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Hi _____, here’s your weekly summary!"
+            android:text="Hi _____ , here’s your weekly summary!"
             android:textColor="@color/bold_text_color"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -57,9 +111,9 @@
             app:cardBackgroundColor="@color/nav_bar_blue"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
-            app:layout_constraintTop_toBottomOf="@id/greeting_text"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/greeting_text">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -70,7 +124,7 @@
                     android:id="@+id/summary_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Total Budget"
+                    android:text="Total Spent"
                     android:textColor="@color/bold_text_color"
                     android:textSize="18sp"
                     android:textStyle="bold"
@@ -86,9 +140,9 @@
                     android:textColor="@color/input_box_tint"
                     android:textSize="32sp"
                     android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/btn_save_expense_dashboard"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/summary_title"
-                    app:layout_constraintEnd_toStartOf="@+id/btn_save_expense_dashboard"/>
+                    app:layout_constraintTop_toBottomOf="@id/summary_title" />
 
                 <Button
                     android:id="@+id/btn_save_expense_dashboard"
@@ -107,9 +161,9 @@
                     android:layout_height="60dp"
                     android:text="+"
                     android:textSize="24sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/dashboard_amount_display"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/dashboard_amount_display"
-                    app:layout_constraintBottom_toBottomOf="@+id/dashboard_amount_display" />
+                    app:layout_constraintTop_toTopOf="@+id/dashboard_amount_display" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -123,9 +177,9 @@
             android:layout_marginTop="16dp"
             app:cardBackgroundColor="#FFFFFF"
             app:cardCornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/budget_summary_card"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/budget_summary_card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -138,9 +192,9 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="Spending Breakdown"
-                    android:textStyle="bold"
+                    android:textColor="@color/bold_text_color"
                     android:textSize="18sp"
-                    android:textColor="@color/bold_text_color"/>
+                    android:textStyle="bold" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -167,6 +221,19 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- NEW: Pods Grid Section -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/pods_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:nestedScrollingEnabled="false"
+            app:layout_constraintTop_toBottomOf="@id/spending_breakdown_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:listitem="@layout/item_pod"
+            tools:itemCount="2" />
+
         <!-- Recent Transactions Section -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/recent_transactions_card"
@@ -176,9 +243,9 @@
             app:cardBackgroundColor="@color/pastel_yellow"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
-            app:layout_constraintTop_toBottomOf="@id/spending_breakdown_card"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/pods_recycler_view">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -189,18 +256,18 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:text="Recent Transactions"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
                     android:textColor="@color/bold_text_color"
-                    android:layout_marginBottom="8dp"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recent_transactions_recycler_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_transaction"/>
+                    tools:listitem="@layout/item_transaction" />
 
                 <Button
                     android:id="@+id/btn_view_all_transactions"
@@ -209,7 +276,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="View All"
-                    android:textColor="@color/bold_text_color"/>
+                    android:textColor="@color/bold_text_color" />
 
             </LinearLayout>
 

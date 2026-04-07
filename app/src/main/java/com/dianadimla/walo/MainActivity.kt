@@ -1,19 +1,35 @@
 package com.dianadimla.walo
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
+
+    // Permission request launcher for Android 13+ notifications
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+        } else {
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Find the NavHostFragment and get its NavController. This is the main container
-        // for all the fragments in the app.
+        // Check and request notification permission for Android 13+
+        askNotificationPermission()
+
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
@@ -21,20 +37,27 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setupWithNavController(navController)
 
-        // This listener handles the visibility of the bottom navigation bar.
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                // List of the bottom navigation
                 R.id.dashboardFragment,
                 R.id.addTransactionFragment,
                 R.id.goalsFragment,
                 R.id.reportsFragment -> {
                     bottomNavigationView.visibility = View.VISIBLE
                 }
-                // Hide the bottom navigation on all other screens (e.g., login, signup).
                 else -> {
                     bottomNavigationView.visibility = View.GONE
                 }
+            }
+        }
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }

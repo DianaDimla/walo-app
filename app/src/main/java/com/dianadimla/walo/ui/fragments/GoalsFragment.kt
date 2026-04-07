@@ -44,6 +44,11 @@ class GoalsFragment : Fragment() {
             goalAdapter.submitList(goals)
             updateUI(goals)
         }
+        
+        // Observe achievement unlocks from the ViewModel
+        viewModel.achievementUnlocked.observe(viewLifecycleOwner) { title ->
+            showAchievementDialog(title)
+        }
 
         binding.createGoalButton.setOnClickListener {
             showCreateGoalDialog()
@@ -66,6 +71,28 @@ class GoalsFragment : Fragment() {
         binding.goalsRecyclerView.apply {
             adapter = goalAdapter
             layoutManager = LinearLayoutManager(requireContext())
+        }
+    }
+    
+    // Shows a sequential dialog with a consistent "Achievement Unlocked" style
+    private fun showAchievementDialog(title: String) {
+        if (!isAdded) return
+        
+        context?.let { ctx ->
+            // Consistent style for both streak and achievement notifications
+            val dialogTitle = if (title.contains("Streak Started")) {
+                "Streak Unlocked!"
+            } else {
+                "\uD83C\uDFC6 Achievement Unlocked!"
+            }
+
+            AlertDialog.Builder(ctx)
+                .setTitle(dialogTitle)
+                .setMessage(title)
+                .setPositiveButton("Awesome!") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
     }
 

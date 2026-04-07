@@ -77,20 +77,20 @@ class ReportsFragment : Fragment() {
         val sortedPods = pods.sortedBy { it.name }
 
         sortedPods.forEach { pod ->
-            entries.add(BarEntry(index, pod.balance.toFloat())) // Use current balance
+            entries.add(BarEntry(index, pod.currentSpending.toFloat())) // Use currentSpending
             labels.add(pod.name)
 
-            // Calculate progress
-            val progress = if (pod.startingBalance > 0) {
-                (pod.balance / pod.startingBalance * 100).toInt()
+            // Calculate progress using limit
+            val progress = if (pod.limit > 0) {
+                (pod.currentSpending / pod.limit * 100).toInt()
             } else {
-                0 // Progress is zero if starting balance is zero
+                0 
             }
             barColors.add(getProgressBarColor(progress)) // Get color
             index++
         }
 
-        val dataSet = BarDataSet(entries, "Pod Balances")
+        val dataSet = BarDataSet(entries, "Pod Spending")
         dataSet.colors = barColors // Use dynamic colors
         dataSet.valueTextColor = Color.BLACK
         dataSet.valueTextSize = 12f
@@ -125,8 +125,9 @@ class ReportsFragment : Fragment() {
     // Get progress bar color
     private fun getProgressBarColor(progress: Int): Int {
         val colorRes = when {
-            progress > 50 -> R.color.progress_green
-            progress > 25 -> R.color.progress_yellow
+            progress < 80 -> R.color.progress_green
+            progress < 90 -> R.color.progress_yellow
+            progress < 100 -> R.color.progress_orange
             else -> R.color.progress_red
         }
         return ContextCompat.getColor(requireContext(), colorRes)

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8.dp"
+    app:cardCornerRadius="12.dp"
+    app:cardElevation="2.dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/achievementContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16.dp">
+
+        <FrameLayout
+            android:id="@+id/iconContainer"
+            android:layout_width="80.dp"
+            android:layout_height="80.dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/ivAchievementIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Achievement Icon"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_launcher_foreground"
+                app:tint="@color/material_dynamic_neutral50" />
+
+            <ImageView
+                android:id="@+id/ivLockOverlay"
+                android:layout_width="24.dp"
+                android:layout_height="24.dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/placeholder_circle"
+                android:padding="4.dp"
+                android:src="@android:drawable/ic_lock_lock"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvAchievementTitle"
+            android:layout_width="0.dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12.dp"
+            android:gravity="center"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/iconContainer"
+            tools:text="Achievement Title" />
+
+        <TextView
+            android:id="@+id/tvAchievementDescription"
+            android:layout_width="0.dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4.dp"
+            android:gravity="center"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvAchievementTitle"
+            tools:text="This is a description of the achievement." />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

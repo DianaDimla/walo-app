@@ -1,6 +1,7 @@
 package com.dianadimla.walo.adapters
 
 import android.content.res.ColorStateList
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,8 @@ class PodAdapter : ListAdapter<Pod, PodAdapter.PodViewHolder>(PodDiffCallback())
 
     // Binds data to views.
     override fun onBindViewHolder(holder: PodViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val pod = getItem(position)
+        holder.bind(pod)
     }
 
     // Holds the views for a pod item.
@@ -32,32 +34,39 @@ class PodAdapter : ListAdapter<Pod, PodAdapter.PodViewHolder>(PodDiffCallback())
         private val iconTextView: TextView = itemView.findViewById(R.id.pod_icon_text)
         private val nameTextView: TextView = itemView.findViewById(R.id.pod_name_text)
         private val amountTextView: TextView = itemView.findViewById(R.id.pod_amount_text)
+        private val limitTextView: TextView = itemView.findViewById(R.id.pod_limit_text)
         private val progressBar: ProgressBar = itemView.findViewById(R.id.pod_progress_bar)
 
         // Binds pod data.
         fun bind(pod: Pod) {
             iconTextView.text = pod.icon
             nameTextView.text = pod.name
-            amountTextView.text = String.format("€%.2f", pod.balance)
-
-            // Show progress bar if starting balance exists.
-            if (pod.startingBalance > 0) {
+            
+            // Displays current available balance
+            amountTextView.text = String.format("€%.2f", pod.currentSpending)
+            
+            // Displays limit if it exists and is > 0
+            if (pod.limit > 0) {
+                limitTextView.visibility = View.VISIBLE
+                limitTextView.text = String.format("/ €%.2f", pod.limit)
+                
+                // FIXED: Progress represents Remaining Budget (Available / Limit)
+                val remainingPercent = ((pod.currentSpending / pod.limit) * 100).toInt().coerceIn(0, 100)
+                
                 progressBar.visibility = View.VISIBLE
-                val progress = (pod.balance / pod.startingBalance * 100).toInt()
-                progressBar.progress = progress
+                progressBar.progress = remainingPercent
 
-                // Set progress bar color based on balance.
                 val context = itemView.context
                 val colorRes = when {
-                    progress > 50 -> R.color.progress_green
-                    progress > 25 -> R.color.progress_yellow
+                    remainingPercent >= 80 -> R.color.progress_green
+                    remainingPercent >= 50 -> R.color.progress_yellow
                     else -> R.color.progress_red
                 }
-                val color = ContextCompat.getColor(context, colorRes)
-                progressBar.progressTintList = ColorStateList.valueOf(color)
-
+                
+                // Ensure the tint is applied correctly
+                progressBar.progressTintList = ColorStateList.valueOf(ContextCompat.getColor(context, colorRes))
             } else {
-                // Hide progress bar if no starting balance.
+                limitTextView.visibility = View.GONE
                 progressBar.visibility = View.GONE
             }
         }
@@ -65,14 +74,7 @@ class PodAdapter : ListAdapter<Pod, PodAdapter.PodViewHolder>(PodDiffCallback())
 
     // DiffUtil for list updates.
     class PodDiffCallback : DiffUtil.ItemCallback<Pod>() {
-        // Check if items are the same.
-        override fun areItemsTheSame(oldItem: Pod, newItem: Pod): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        // Check if contents are the same.
-        override fun areContentsTheSame(oldItem: Pod, newItem: Pod): Boolean {
-            return oldItem == newItem
-        }
+        override fun areItemsTheSame(oldItem: Pod, newItem: Pod): Boolean = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Pod, newItem: Pod): Boolean = oldItem == newItem
     }
 }
