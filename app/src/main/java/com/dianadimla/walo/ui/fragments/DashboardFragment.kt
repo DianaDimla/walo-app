@@ -1,3 +1,7 @@
+/**
+ * Main dashboard for the application, providing a high-level overview of the user's finances.
+ * Visualises monthly spending via a pie chart and lists recent transactions and active budget pods.
+ */
 package com.dianadimla.walo.ui.fragments
 
 import android.app.AlertDialog
@@ -18,12 +22,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dianadimla.walo.R
 import com.dianadimla.walo.adapters.NudgeAdapter
-import com.dianadimla.walo.adapters.PodAdapter
 import com.dianadimla.walo.adapters.TransactionAdapter
 import com.dianadimla.walo.data.GamificationManager
 import com.dianadimla.walo.data.NudgeManager
@@ -32,6 +34,8 @@ import com.dianadimla.walo.data.Pod
 import com.dianadimla.walo.data.Transaction
 import com.dianadimla.walo.data.TransactionsRepository
 import com.dianadimla.walo.databinding.FragmentDashboardBinding
+import com.dianadimla.walo.utils.ColorUtils
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -44,7 +48,6 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 
-// Main dashboard displaying user spending, pods, and recent activity
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
@@ -55,24 +58,17 @@ class DashboardFragment : Fragment() {
     private val podList = mutableListOf<Pod>()
 
     private lateinit var transactionAdapter: TransactionAdapter
-    private lateinit var podAdapter: PodAdapter 
     
     private lateinit var transactionsRepository: TransactionsRepository
     private lateinit var gamificationManager: GamificationManager
     private lateinit var nudgeManager: NudgeManager
     
-    // Store listeners to remove them when view is destroyed to prevent crashes
+    // Tracks active listeners to ensure they are cleaned up on view destruction
     private val registrations = mutableListOf<ListenerRegistration>()
     
-    // Queue for achievements to show them one after another only after user interaction
+    // Achievement display queue to prevent overlapping dialogs
     private val achievementQueue = mutableListOf<String>()
     private var isDialogShowing = false
-
-    private val pastelPalette = listOf(
-        "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF",
-        "#D4A5A5", "#F3E5AB", "#B2E2F2", "#E3D1FB", "#F19CBB",
-        "#C1E1C1", "#FFD1DC", "#ECEAE4", "#A2C4C9", "#C5B4E3", "#F9F1F0"
-    ).map { Color.parseColor(it) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -87,21 +83,21 @@ class DashboardFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
         
-        // Initialize managers and transaction repository
         gamificationManager = GamificationManager(auth, firestore)
-        nudgeManager = NudgeManager()
+        nudgeManager = NudgeManager.getInstance()
         transactionsRepository = TransactionsRepository(auth, firestore, gamificationManager, nudgeManager)
 
-        // Set achievement unlock listener to use the queue
+        // Configures sequential achievement display logic
         gamificationManager.onAchievementUnlocked = { title ->
             queueAchievementDialog(title)
         }
 
-        // Trigger daily streak check when the dashboard loads
+        // Evaluates streak continuity upon dashboard entry
         gamificationManager.onAppOpened()
 
         setupRecyclerView()
 
+        // Initialises brand animation for the mascot
         val swimAnimation = AnimationUtils.loadAnimation(context, R.anim.slow_swim)
         binding.waloMascot.startAnimation(swimAnimation)
 
@@ -113,7 +109,6 @@ class DashboardFragment : Fragment() {
             findNavController().navigate(R.id.action_dashboard_to_achievements)
         }
 
-        // Notification Bell Click: Show AI Nudge Dropdown Panel
         binding.notificationBell.setOnClickListener {
             showNudgeDropdown(it)
         }
@@ -136,20 +131,18 @@ class DashboardFragment : Fragment() {
         listenForStreak()
     }
 
-    // Shows a dropdown PopupWindow containing AI nudge history with enhanced UI.
-    // anchor The view (bell icon) that the dropdown will anchor to.
+    // Displays the session's AI nudge history in an overlay panel
     private fun showNudgeDropdown(anchor: View) {
         val layoutInflater = LayoutInflater.from(requireContext())
         val popupView = layoutInflater.inflate(R.layout.popup_nudge_history, null)
 
-        // Create the PopupWindow with slide-down animation
         val popupWindow = PopupWindow(
             popupView,
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
             true
         ).apply {
-            animationStyle = R.style.PopupAnimation // Added slide-down animation
+            animationStyle = R.style.PopupAnimation 
             elevation = 15f
         }
 
@@ -163,7 +156,7 @@ class DashboardFragment : Fragment() {
 
         val nudges = NudgeStorage.getAllNudges()
         
-        // Handle Empty State Visibility
+        // Toggles between list view and empty state guidance
         if (nudges.isEmpty()) {
             recyclerView.visibility = View.GONE
             emptyState.visibility = View.VISIBLE
@@ -184,11 +177,10 @@ class DashboardFragment : Fragment() {
             Toast.makeText(context, "History cleared", Toast.LENGTH_SHORT).show()
         }
 
-        // Position anchored to bell icon with offset to stay on screen
         popupWindow.showAsDropDown(anchor, -260, 10)
     }
 
-    // Adds a new achievement message to the queue
+    // Appends an achievement message to the display queue
     private fun queueAchievementDialog(title: String) {
         if (!isAdded) return
         achievementQueue.add(title)
@@ -197,7 +189,7 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    // Processes the next achievement in the queue
+    // Presents the next achievement in the queue to avoid UI overlap
     private fun showNextAchievement() {
         if (achievementQueue.isEmpty() || !isAdded) {
             isDialogShowing = false
@@ -208,7 +200,6 @@ class DashboardFragment : Fragment() {
         isDialogShowing = true
 
         context?.let { ctx ->
-            // Consistent headers for streaks and achievements
             val dialogTitle = if (title.contains("Streak Started")) {
                 "Streak Progress!"
             } else {
@@ -218,10 +209,10 @@ class DashboardFragment : Fragment() {
             AlertDialog.Builder(ctx)
                 .setTitle(dialogTitle)
                 .setMessage(title)
-                .setCancelable(false) // Ensures user must interact with the button
+                .setCancelable(false) 
                 .setPositiveButton("Awesome!") { dialog, _ ->
                     dialog.dismiss()
-                    // TRIGGER NEXT: Only show the next notification after the user dismisses this one
+                    // Proceeds to the next notification after user acknowledgement
                     showNextAchievement()
                 }
                 .show()
@@ -231,24 +222,15 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        // Setup Transaction Adapter
         transactionAdapter = TransactionAdapter()
         binding.recentTransactionsRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = transactionAdapter
             isNestedScrollingEnabled = false
         }
-
-        // NEW: Setup PodAdapter for Dashboard
-        podAdapter = PodAdapter()
-        binding.podsRecyclerView.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = podAdapter
-            isNestedScrollingEnabled = false
-        }
     }
 
-    // Listens for realtime updates to the user's activity streak
+    // Observes real-time activity streak data for the current user
     private fun listenForStreak() {
         val uid = auth.currentUser?.uid ?: return
         val registration = firestore.collection("users").document(uid)
@@ -264,6 +246,7 @@ class DashboardFragment : Fragment() {
                     val stats = snapshot.get("stats") as? Map<*, *>
                     val streak = (stats?.get("currentStreak") as? Number)?.toInt() ?: 0
                     
+                    // Streak UI is only visible once the user reaches the minimum threshold
                     if (streak >= 3) {
                         binding.streakContainer.visibility = View.VISIBLE
                         binding.streakNumberText.text = streak.toString()
@@ -275,7 +258,7 @@ class DashboardFragment : Fragment() {
         registrations.add(registration)
     }
 
-    // Listens for real time updates to recent transactions
+    // Tracks the most recent financial entries for dashboard visibility
     private fun listenForRecentTransactions() {
         val uid = auth.currentUser?.uid ?: return
         val registration = firestore.collection("users").document(uid).collection("transactions")
@@ -296,7 +279,7 @@ class DashboardFragment : Fragment() {
         registrations.add(registration)
     }
 
-    // Listens for monthly transactions to update the spending chart
+    // Observes transaction data within the current calendar month
     private fun listenForMonthlySpending() {
         val uid = auth.currentUser?.uid ?: return
         
@@ -324,7 +307,7 @@ class DashboardFragment : Fragment() {
         registrations.add(registration)
     }
 
-    // Updates the pie chart with categorized spending data
+    // Aggregates spending by category and updates the pie chart visualisation
     private fun updateSpendingChart(transactions: List<Transaction>) {
         val spendingByCategory = transactions
             .filter { it.expense }
@@ -340,31 +323,46 @@ class DashboardFragment : Fragment() {
         binding.spendingPieChart.visibility = View.VISIBLE
         binding.emptyStateText.visibility = View.GONE
 
-        val entries = spendingByCategory.map { PieEntry(it.value.toFloat(), it.key) }
+        // Creates formatted data entries for the chart legend
+        val entries = spendingByCategory.map { (category, amount) ->
+            PieEntry(amount.toFloat(), "$category (€${amount.toInt()})") 
+        }
         
-        val sliceColors = entries.map { entry ->
-            val index = abs(entry.label.hashCode()) % pastelPalette.size
-            pastelPalette[index]
+        // Maps categories to consistent theme colours
+        val sliceColors = spendingByCategory.keys.map { category ->
+            ColorUtils.getCategoryColor(category)
         }
 
         val dataSet = PieDataSet(entries, "").apply {
             colors = sliceColors
             valueTextSize = 12f
-            setDrawValues(true)
+            setDrawValues(false) 
         }
 
         binding.spendingPieChart.apply {
             data = PieData(dataSet)
             description.isEnabled = false
-            legend.isEnabled = false
+            
+            legend.apply {
+                isEnabled = true
+                verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
+                horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+                orientation = Legend.LegendOrientation.HORIZONTAL
+                setDrawInside(false)
+                isWordWrapEnabled = true
+                xEntrySpace = 10f
+                yEntrySpace = 5f
+                textSize = 12f
+            }
+
             setHoleColor(Color.TRANSPARENT)
-            setEntryLabelColor(Color.BLACK)
+            setDrawEntryLabels(false) 
             animateY(1000)
             invalidate()
         }
     }
 
-    // Keeps local pod data synchronized with Firestore and updates UI
+    // Synchronises budget pod data for transaction validation and selection
     private fun listenForPods() {
         val uid = auth.currentUser?.uid ?: return
         val registration = firestore.collection("users").document(uid).collection("pods")
@@ -373,7 +371,7 @@ class DashboardFragment : Fragment() {
                 if (_binding == null) return@addSnapshotListener
                 
                 if (e != null) {
-                    Log.w("DashboardFragment", "Listen for pods failed.", e)
+                    Log.w("DashboardUpdate", "Listen for pods failed.", e)
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
@@ -381,21 +379,14 @@ class DashboardFragment : Fragment() {
                         doc.toObject(Pod::class.java)?.copy(id = doc.id)
                     }
                     
-                    // Added Debug logs to track real-time updates
-                    Log.d("DashboardUpdate", "Firestore listener triggered. Received ${pods.size} pods.")
-                    pods.forEach { Log.d("DashboardUpdate", "Pod: ${it.name}, CurrentSpending: ${it.currentSpending}") }
-
                     podList.clear()
                     podList.addAll(pods)
-                    
-                    // Update the adapter with the new list
-                    podAdapter.submitList(pods.toList()) 
                 }
             }
         registrations.add(registration)
     }
 
-    // Listens for budget changes to update the total display
+    // Calculates and displays the total accumulated spending across all pods
     private fun listenForTotalBudget() {
         val userId = auth.currentUser?.uid ?: return
         val registration = firestore.collection("users").document(userId).collection("pods")
@@ -407,7 +398,6 @@ class DashboardFragment : Fragment() {
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
-                    // Refactored to use 'currentSpending' instead of 'balance'
                     val totalSpending = snapshot.documents.sumOf { doc ->
                         doc.getDouble("currentSpending") ?: 0.0
                     }
@@ -417,6 +407,7 @@ class DashboardFragment : Fragment() {
         registrations.add(registration)
     }
 
+    // Retrieves profile details to personalise the dashboard greeting
     private fun fetchAndDisplayUserData() {
         val userId = auth.currentUser?.uid
         if (userId == null) {
@@ -433,19 +424,20 @@ class DashboardFragment : Fragment() {
                 
                 if (document != null && document.exists()) {
                     val firstName = document.getString("firstName")
-                    binding.greetingText.text = if (firstName != null) "Hi $firstName, here’s your weekly summary!" else "Hi, here’s your weekly summary!"
+                    binding.greetingText.text = if (firstName != null) "Hi $firstName, here’s your budget summary!" else "Hi, here’s your budget summary!"
                 } else {
-                    binding.greetingText.text = "Hi, here’s your weekly summary!"
+                    binding.greetingText.text = "Hi, here’s your budget summary!"
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("DashboardFragment", "Error fetching user data", e)
                 if (_binding != null) {
-                    binding.greetingText.text = "Hi, here’s your weekly summary!"
+                    binding.greetingText.text = "Hi, here’s your budget summary!"
                 }
             }
     }
 
+    // Opens a dialog to record income for a specific pod
     private fun showIncomeDialog() {
         if (podList.isEmpty()) {
             Toast.makeText(requireContext(), "Please create a Pod first", Toast.LENGTH_SHORT).show()
@@ -475,6 +467,7 @@ class DashboardFragment : Fragment() {
             .show()
     }
 
+    // Opens a dialog to record an expenditure for a specific pod
     private fun showExpenseDialog() {
         if (podList.isEmpty()) {
             Toast.makeText(requireContext(), "Please create a Pod first", Toast.LENGTH_SHORT).show()
@@ -498,8 +491,9 @@ class DashboardFragment : Fragment() {
 
                 if (amount != null && amount > 0) {
                     val selectedPod = podList[podSpinner.selectedItemPosition]
-                    // Use 'currentSpending' instead of 'balance'
                     val newSpending = selectedPod.currentSpending + amount
+                    
+                    // Validates expenditure against the pod's budget limit
                     if (selectedPod.limit == 0.0 || newSpending <= selectedPod.limit) {
                         saveTransactionAndUpdatePod(amount, selectedPod, expense = true, note = note.takeIf { it.isNotEmpty() })
                     } else {
@@ -513,7 +507,7 @@ class DashboardFragment : Fragment() {
             .show()
     }
 
-    // Prepares and saves a transaction through the repository
+    // Persists financial entries and synchronises the pod's spending status
     private fun saveTransactionAndUpdatePod(amount: Double, pod: Pod, expense: Boolean, note: String?) {
         val newTransaction = Transaction(
             amount = amount,
@@ -525,7 +519,6 @@ class DashboardFragment : Fragment() {
             podName = pod.name
         )
 
-        // Delegates transaction saving and gamification triggering to the repository
         transactionsRepository.saveTransaction(
             podId = pod.id,
             amount = amount,
@@ -534,8 +527,6 @@ class DashboardFragment : Fragment() {
             onSuccess = { nudgeMessage ->
                 if (_binding == null) return@saveTransaction
                 val action = if (expense) "Expense" else "Income"
-                
-                // Show nudge if present, else standard success
                 val message = nudgeMessage ?: "$action recorded in ${pod.name}"
                 Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
             },
@@ -548,7 +539,7 @@ class DashboardFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Clean up listeners to prevent memory leaks and crashes from background updates
+        // Prevents memory leaks and background processing by removing all Firestore listeners
         registrations.forEach { it.remove() }
         registrations.clear()
         _binding = null

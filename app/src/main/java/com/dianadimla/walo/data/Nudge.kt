@@ -1,9 +1,10 @@
+/**
+ * Data model for an AI-Driven spending nudge.
+ * Used to store messages that provide behavioural feedback or reminders.
+ */
 package com.dianadimla.walo.data
 
-/**
- * Data class representing an AI nudge notification.
- */
 data class Nudge(
-    val message: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val message: String, // The content of the nudge notification
+    val timestamp: Long = System.currentTimeMillis() // When the nudge was generated
 )

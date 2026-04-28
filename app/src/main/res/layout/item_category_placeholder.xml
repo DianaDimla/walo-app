@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder layout for pod categories, used during data loading or skeleton states. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -6,7 +7,7 @@
     android:paddingVertical="12dp"
     android:gravity="center_vertical">
 
-    <!-- Icon Placeholder -->
+    <!-- Category icon placeholder -->
     <View
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -20,6 +21,7 @@
         android:textStyle="bold"
         android:layout_marginStart="16dp"/>
 
+    <!-- Monetary value placeholder -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

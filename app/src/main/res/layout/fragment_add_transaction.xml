@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The root layout for the Add Transaction screen. -->
+<!-- Screen for managing financial transactions and budget pods. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:padding="20dp">
 
-    <!-- A TextView to display the total budget amount across all pods. -->
+    <!-- Overall budget summary display -->
     <TextView
         android:id="@+id/amount_display"
         android:layout_width="0dp"
@@ -21,7 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- A button to open the add expense dialog. -->
+    <!-- Quick action buttons for logging financial entries -->
     <Button
         android:id="@+id/btn_save_expense"
         android:layout_width="wrap_content"
@@ -34,7 +34,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/amount_display" />
 
-    <!-- A button to open the add income dialog. -->
     <Button
         android:id="@+id/btn_save_income"
         android:layout_width="wrap_content"
@@ -45,6 +44,7 @@
         app:layout_constraintStart_toEndOf="@+id/btn_save_expense"
         app:layout_constraintTop_toTopOf="@+id/btn_save_expense" />
 
+    <!-- Pods management section -->
     <TextView
         android:id="@+id/pods_title"
         android:layout_width="wrap_content"
@@ -57,7 +57,6 @@
         app:layout_constraintTop_toBottomOf="@+id/btn_save_expense"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- A button to open the pod editing/deletion dialog. -->
     <Button
         android:id="@+id/btn_edit_pod"
         style="?attr/materialButtonOutlinedStyle"
@@ -69,7 +68,6 @@
         app:layout_constraintTop_toTopOf="@+id/pods_title"
         app:layout_constraintBottom_toBottomOf="@+id/pods_title"/>
 
-    <!-- A button to open the create new pod dialog. -->
     <Button
         android:id="@+id/btn_add_pod"
         style="?attr/materialButtonOutlinedStyle"
@@ -82,7 +80,7 @@
         app:layout_constraintTop_toTopOf="@+id/pods_title"
         app:layout_constraintBottom_toBottomOf="@+id/pods_title"/>
 
-    <!-- A RecyclerView to display the list of user-created pods in a grid. -->
+    <!-- Grid display of active budget pods -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/pods_recycler_view"
         android:layout_width="0dp"
@@ -94,36 +92,43 @@
         app:layout_constraintTop_toBottomOf="@+id/pods_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/history_title"
+        app:layout_constraintBottom_toTopOf="@+id/history_container"
         app:layout_constraintVertical_weight="1"
         tools:listitem="@layout/item_pod"
         tools:itemCount="4" />
 
-    <!-- The title for the transaction history section. -->
-    <TextView
-        android:id="@+id/history_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Expense History"
-        android:textColor="@color/bold_text_color"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/pods_recycler_view"
-        app:layout_constraintBottom_toTopOf="@+id/expense_history_recycler_view"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- A RecyclerView to display the list of recent transactions. -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/expense_history_recycler_view"
+    <!-- Chronological transaction history section -->
+    <LinearLayout
+        android:id="@+id/history_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@+id/history_title"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@drawable/bg_expense_history"
+        app:layout_constraintTop_toBottomOf="@+id/pods_recycler_view"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_weight="1"
-        tools:listitem="@layout/item_transaction"/>
+        app:layout_constraintVertical_weight="1.2">
+
+        <TextView
+            android:id="@+id/history_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Expense History"
+            android:textColor="@color/bold_text_color"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/expense_history_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_transaction"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

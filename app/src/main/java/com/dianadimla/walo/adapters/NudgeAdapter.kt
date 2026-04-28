@@ -1,3 +1,7 @@
+/**
+ * Adapter for displaying AI-Driven financial nudges in a history list.
+ * Uses DiffUtil for optimised list updates.
+ */
 package com.dianadimla.walo.adapters
 
 import android.view.LayoutInflater
@@ -13,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// Adapter to display AI nudge history in a list.
 class NudgeAdapter : ListAdapter<Nudge, NudgeAdapter.NudgeViewHolder>(NudgeDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NudgeViewHolder {
@@ -25,17 +28,20 @@ class NudgeAdapter : ListAdapter<Nudge, NudgeAdapter.NudgeViewHolder>(NudgeDiffC
         holder.bind(getItem(position))
     }
 
+    // ViewHolder class to manage the display of a single nudge message
     class NudgeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val messageText: TextView = itemView.findViewById(R.id.nudge_message)
         private val timestampText: TextView = itemView.findViewById(R.id.nudge_timestamp)
         private val dateFormat = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
 
+        // Maps nudge data to UI components and formats the timestamp
         fun bind(nudge: Nudge) {
             messageText.text = nudge.message
             timestampText.text = dateFormat.format(Date(nudge.timestamp))
         }
     }
 
+    // Callback for calculating list differences based on timestamps
     class NudgeDiffCallback : DiffUtil.ItemCallback<Nudge>() {
         override fun areItemsTheSame(oldItem: Nudge, newItem: Nudge): Boolean = oldItem.timestamp == newItem.timestamp
         override fun areContentsTheSame(oldItem: Nudge, newItem: Nudge): Boolean = oldItem == newItem

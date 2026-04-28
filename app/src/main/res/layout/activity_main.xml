@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The root layout for the main activity, using a ConstraintLayout. -->
+<!-- Main entry point container for the application, hosting navigation components. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,7 +8,7 @@
     android:background="@color/app_background"
     tools:context=".MainActivity">
 
-    <!-- Bottom navigation view for switching between the main fragments. -->
+    <!-- Primary navigation bar for switching between main functional modules. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="0dp"
@@ -24,7 +24,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:menu="@menu/bottom_nav_menu" />
 
-    <!-- This container hosts the navigation graph, allowing fragments to be swapped in and out. -->
+    <!-- Navigation host for managing the life cycle and transition of fragments. -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"

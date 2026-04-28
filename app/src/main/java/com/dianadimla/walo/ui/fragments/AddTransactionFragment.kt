@@ -1,3 +1,7 @@
+/**
+ * Fragment for managing transactions and spending pods.
+ * Facilitates the creation, modification, and deletion of pods alongside transaction logging.
+ */
 package com.dianadimla.walo.ui.fragments
 
 import android.app.AlertDialog
@@ -11,7 +15,6 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dianadimla.walo.R
@@ -32,34 +35,26 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.util.Locale
 
-// Fragment for managing transactions and spending pods.
 class AddTransactionFragment : Fragment() {
 
-    // View binding
     private var _binding: FragmentAddTransactionBinding? = null
     private val binding get() = _binding!!
 
-    // Adapters for RecyclerViews
     private lateinit var transactionAdapter: TransactionAdapter
     private lateinit var podAdapter: PodAdapter
-    // Local list to hold pod data.
     private val podList = mutableListOf<Pod>()
 
-    // Firebase Firestore and Auth instances.
     private val db = Firebase.firestore
     private val currentUser = Firebase.auth.currentUser
     
-    // Managers, Repository and Notification Helper
     private lateinit var gamificationManager: GamificationManager
     private lateinit var nudgeManager: NudgeManager
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var transactionsRepository: TransactionsRepository
     
-    // Queue for achievements to show them one after another
     private val achievementQueue = mutableListOf<String>()
     private var isDialogShowing = false
 
-    // Default emojis for creating new pods.
     private val defaultEmojis = listOf(
         "💰", "🛒", "✈️", "🏠", "🍔", "🚗", "🎁", "🎓", "🏥", "👕", "🎉", "💡"
     )
@@ -72,48 +67,42 @@ class AddTransactionFragment : Fragment() {
         return binding.root
     }
 
-    // View created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize Managers, Helper and TransactionsRepository
+        // Initialises core managers and support helpers
         gamificationManager = GamificationManager(Firebase.auth, Firebase.firestore)
-        nudgeManager = NudgeManager()
+        nudgeManager = NudgeManager.getInstance()
         notificationHelper = NotificationHelper(requireContext())
         transactionsRepository = TransactionsRepository(Firebase.auth, Firebase.firestore, gamificationManager, nudgeManager)
 
-        // Set achievement unlock listener to use the queue
+        // Handles sequential achievement display logic
         gamificationManager.onAchievementUnlocked = { title ->
             queueAchievementDialog(title)
         }
 
-        // Initialize RecyclerViews and listeners.
         setupRecyclerViews()
         listenForPods()
         listenForExpenseHistory()
 
-        // Set click listener for adding income.
         binding.btnSaveIncome.setOnClickListener {
             showIncomeDialog()
         }
 
-        // Set click listener for adding an expense.
         binding.btnSaveExpense.setOnClickListener {
             showExpenseDialog()
         }
 
-        // Set click listener for adding a new pod.
         binding.btnAddPod.setOnClickListener {
             showCreatePodDialog()
         }
 
-        // Set click listener for editing/deleting a pod.
         binding.btnEditPod.setOnClickListener {
             showPodOptionsDialog()
         }
     }
 
-    // Adds a new achievement message to the queue
+    // Appends an achievement message to the display queue
     private fun queueAchievementDialog(title: String) {
         if (!isAdded) return
         achievementQueue.add(title)
@@ -122,7 +111,7 @@ class AddTransactionFragment : Fragment() {
         }
     }
 
-    // Processes the next achievement in the queue
+    // Presents the next achievement in the queue to avoid UI overlap
     private fun showNextAchievement() {
         if (achievementQueue.isEmpty() || !isAdded) {
             isDialogShowing = false
@@ -133,7 +122,6 @@ class AddTransactionFragment : Fragment() {
         isDialogShowing = true
 
         context?.let { ctx ->
-            // Consistent headers for streaks and achievements
             val dialogTitle = if (title.contains("Streak Started")) {
                 "Streak Progress!"
             } else {
@@ -143,10 +131,9 @@ class AddTransactionFragment : Fragment() {
             AlertDialog.Builder(ctx)
                 .setTitle(dialogTitle)
                 .setMessage(title)
-                .setCancelable(false) // Ensures user must interact with the button
+                .setCancelable(false) 
                 .setPositiveButton("Awesome!") { dialog, _ ->
                     dialog.dismiss()
-                    // TRIGGER NEXT: Only show the next notification after the user dismisses this one
                     showNextAchievement()
                 }
                 .show()
@@ -155,60 +142,41 @@ class AddTransactionFragment : Fragment() {
         }
     }
 
-    // Configures the RecyclerViews
+    // Initialises the adapters and RecyclerView components
     private fun setupRecyclerViews() {
-        // Set up the transaction history RecyclerView.
         transactionAdapter = TransactionAdapter()
         binding.expenseHistoryRecyclerView.adapter = transactionAdapter
 
-        // Set up the pods RecyclerView.
         podAdapter = PodAdapter()
         binding.podsRecyclerView.adapter = podAdapter
     }
 
-    // Listens for real time updates to the pods collection in Firestore.
+    // Observes real-time updates to budget pods from Firestore
     private fun listenForPods() {
         val uid = currentUser?.uid ?: return
         db.collection("users").document(uid).collection("pods")
             .orderBy("name")
             .addSnapshotListener { snapshot, e ->
                 if (!isAdded) return@addSnapshotListener
-                if (e != null) {
-                    Log.w("TraceFlow", "STEP 5 FAILURE: Listen for pods failed.", e)
-                    return@addSnapshotListener
-                }
+                if (e != null) return@addSnapshotListener
 
                 if (snapshot != null) {
-                    // Map documents to Pod objects.
                     val pods = snapshot.documents.mapNotNull { doc ->
                         doc.toObject(Pod::class.java)?.copy(id = doc.id)
                     }
                     
-                    Log.d("TraceFlow", "STEP 5: Snapshot Listener Triggered. Received ${pods.size} pods.")
-                    pods.forEach { Log.d("TraceFlow", "Pod data received: Name=${it.name}, Spending=${it.currentSpending}") }
-
-                    // Update the local pod list and the adapter immediately.
                     podList.clear()
                     podList.addAll(pods)
-                    
-                    // ListAdapter's submitList handles efficient UI updates automatically
-                    Log.d("TraceFlow", "STEP 6: Calling submitList(pods)")
                     podAdapter.submitList(pods.toList())
 
-                    // UI Update: Calculate and display the total spending vs total limit.
+                    // Synchronises the total current spending display
                     val totalSpending = pods.sumOf { it.currentSpending }
-                    val totalLimit = pods.sumOf { it.limit }
-
-                    if (totalLimit > 0) {
-                        binding.amountDisplay.text = String.format(Locale.getDefault(), "€%.2f / €%.2f", totalSpending, totalLimit)
-                    } else {
-                        binding.amountDisplay.text = String.format(Locale.getDefault(), "€%.2f", totalSpending)
-                    }
+                    binding.amountDisplay.text = String.format(Locale.getDefault(), "€%.2f", totalSpending)
                 }
             }
     }
 
-    // Shows a dialog to create a new pod or edit an existing one.
+    // Opens the configuration wizard for creating or editing a budget pod
     private fun showCreatePodDialog(existingPod: Pod? = null) {
         val context = context ?: return
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_create_pod, null)
@@ -219,28 +187,23 @@ class AddTransactionFragment : Fragment() {
         val podLimitInput = dialogView.findViewById<EditText>(R.id.pod_limit_input)
         val emojiRecyclerView = dialogView.findViewById<RecyclerView>(R.id.emoji_recycler_view)
 
-        // Pre-fill fields if editing
         if (existingPod != null) {
             podNameInput.setText(existingPod.name)
             podLimitInput.setText(existingPod.limit.toString())
-            // Disable name editing to prevent confusion with transaction categories
             podNameInput.isEnabled = false 
         }
 
         var selectedEmoji = existingPod?.icon ?: defaultEmojis[0]
 
-        // Adapter for the emoji selector
         val emojiAdapter = EmojiAdapter(defaultEmojis) { emoji ->
             selectedEmoji = emoji
         }
 
-        // Configure the emoji RecyclerView
         emojiRecyclerView.apply {
-            layoutManager = GridLayoutManager(context, 6) // 6 columns for emojis
+            layoutManager = GridLayoutManager(context, 6)
             adapter = emojiAdapter
         }
 
-        // Build the dialog
         val dialog = AlertDialog.Builder(context)
             .setTitle(if (existingPod == null) "Create New Pod" else "Edit Pod")
             .setView(dialogView)
@@ -287,38 +250,31 @@ class AddTransactionFragment : Fragment() {
         dialog.show()
     }
 
-    // Updates an existing pod's limit and icon in Firestore.
+    // Persists modifications to an existing pod's parameters
     private fun updatePodLimit(pod: Pod, newLimit: Double, newIcon: String) {
         val uid = currentUser?.uid ?: return
-        Log.d("FirestoreUpdate", "Updating pod ${pod.id} for user $uid") // Debug Log
-
         db.collection("users").document(uid).collection("pods").document(pod.id)
             .update(mapOf(
                 "limit" to newLimit,
                 "icon" to newIcon
             ))
             .addOnSuccessListener {
-                Log.d("FirestoreUpdate", "Pod ${pod.id} successfully updated.") // Success Log
                 if (isAdded) {
                     Toast.makeText(context, "Pod updated successfully!", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e ->
-                Log.e("FirestoreUpdate", "Error updating pod ${pod.id}", e) // Failure Log
                 if (isAdded) {
                     Toast.makeText(context, "Update failed: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
     }
 
-    // Saves a new pod to Firestore.
+    // Provisions a new budget pod within the user's Firestore collection
     private fun saveNewPod(podName: String, icon: String, limit: Double) {
         val uid = currentUser?.uid ?: return
         val newPodRef = db.collection("users").document(uid).collection("pods").document()
         
-        Log.d("FirestoreSave", "Creating new pod at: users/$uid/pods/${newPodRef.id}") // Debug Log
-
-        // Create a new Pod object with the required limit.
         val pod = Pod(
             id = newPodRef.id, 
             name = podName, 
@@ -327,23 +283,20 @@ class AddTransactionFragment : Fragment() {
             limit = limit
         )
 
-        // Set the new pod in Firestore and show feedback.
         newPodRef.set(pod)
             .addOnSuccessListener { 
-                Log.d("FirestoreSave", "Pod '$podName' successfully saved.") // Success Log
                 if (isAdded) {
                     Toast.makeText(context, "Pod '$podName' created!", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e -> 
-                Log.e("FirestoreSave", "Error saving pod '$podName'", e) // Failure Log
                 if (isAdded) {
                     Toast.makeText(context, "Failed to create pod: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
     }
 
-    // Shows a dialog with options for a pod (Edit or Delete).
+    // Displays management options for the selected budget pod
     private fun showPodOptionsDialog() {
         if (podList.isEmpty()) {
             Toast.makeText(context, "There are no pods to manage.", Toast.LENGTH_SHORT).show()
@@ -353,19 +306,16 @@ class AddTransactionFragment : Fragment() {
         val podNames = podList.map { it.name }.toTypedArray()
         val context = context ?: return
 
-        // Step 1: Select which pod to manage
         AlertDialog.Builder(context)
             .setTitle("Manage Pod")
             .setItems(podNames) { _, which ->
                 val selectedPod = podList[which]
-                
-                // Step 2: Choose action for selected pod
                 val options = arrayOf("Edit Limit/Icon", "Delete Pod")
                 AlertDialog.Builder(context)
                     .setTitle("Options for ${selectedPod.name}")
                     .setItems(options) { _, optionIndex ->
                         when (optionIndex) {
-                            0 -> showCreatePodDialog(selectedPod) // Reuse dialog for editing
+                            0 -> showCreatePodDialog(selectedPod)
                             1 -> confirmAndDeletePod(selectedPod)
                         }
                     }
@@ -375,7 +325,7 @@ class AddTransactionFragment : Fragment() {
             .show()
     }
 
-    // Asks for user confirmation before deleting a pod.
+    // Requests user confirmation before permanent pod deletion
     private fun confirmAndDeletePod(pod: Pod) {
         val context = context ?: return
         AlertDialog.Builder(context)
@@ -388,7 +338,7 @@ class AddTransactionFragment : Fragment() {
             .show()
     }
 
-    // Deletes a pod from Firestore
+    // Permanently removes a pod document from Firestore
     private fun deletePod(pod: Pod) {
         val uid = currentUser?.uid ?: return
         db.collection("users").document(uid).collection("pods").document(pod.id)
@@ -405,7 +355,7 @@ class AddTransactionFragment : Fragment() {
             }
     }
 
-    // Shows a dialog to add income to a pod.
+    // Opens an input dialog to log income towards a pod
     private fun showIncomeDialog() {
         if (podList.isEmpty()) {
             Toast.makeText(context, "Please create a Pod first", Toast.LENGTH_SHORT).show()
@@ -417,13 +367,11 @@ class AddTransactionFragment : Fragment() {
         val amountInput = dialogView.findViewById<EditText>(R.id.editBudgetAmount)
         val podSpinner = dialogView.findViewById<Spinner>(R.id.pod_spinner_income)
 
-        // Populate the spinner with pod names.
         val podNames = podList.map { it.name }
         val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, podNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         podSpinner.adapter = adapter
 
-        // Build and show the income dialog.
         AlertDialog.Builder(context)
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
@@ -441,7 +389,7 @@ class AddTransactionFragment : Fragment() {
             .show()
     }
 
-    // Shows a dialog to add an expense to a pod.
+    // Opens an input dialog to log an expenditure for a pod
     private fun showExpenseDialog() {
         if (podList.isEmpty()) {
             Toast.makeText(context, "Please create a Pod first", Toast.LENGTH_SHORT).show()
@@ -454,20 +402,16 @@ class AddTransactionFragment : Fragment() {
         val descriptionInput = dialogView.findViewById<EditText>(R.id.expense_description_input)
         val podSpinner = dialogView.findViewById<Spinner>(R.id.pod_spinner_expense)
 
-        // Populate the spinner with pod names.
         val podNames = podList.map { it.name }
         val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, podNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         podSpinner.adapter = adapter
 
-        // Build and show the expense dialog.
         AlertDialog.Builder(context)
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
                 val amount = amountInput.text.toString().toDoubleOrNull()
                 val note = descriptionInput.text.toString().trim()
-
-                Log.d("TraceFlow", "STEP 1: Save Expense Clicked. Amount: $amount")
 
                 if (amount != null && amount > 0) {
                     val selectedPod = podList[podSpinner.selectedItemPosition]
@@ -482,6 +426,7 @@ class AddTransactionFragment : Fragment() {
             .show()
     }
 
+    // Persists a financial transaction and updates the pod's accumulated spending
     private fun saveTransactionAndUpdatePod(amount: Double, pod: Pod, expense: Boolean, note: String?) {
         val newTransaction = Transaction(
             amount = amount,
@@ -493,8 +438,6 @@ class AddTransactionFragment : Fragment() {
             podName = pod.name
         )
 
-        Log.d("TraceFlow", "STEP 1b: saveTransactionAndUpdatePod triggered for Pod ID: ${pod.id}")
-
         transactionsRepository.saveTransaction(
             podId = pod.id,
             amount = amount,
@@ -503,37 +446,25 @@ class AddTransactionFragment : Fragment() {
             onSuccess = { nudgeMessage ->
                 if (!isAdded) return@saveTransaction
                 
-                Log.d("TraceFlow", "STEP 7: Repository Success Callback in Fragment. Nudge: $nudgeMessage")
-
-                // UI Nudge: Show system notification if a nudge message exists
                 nudgeMessage?.let { message ->
                     notificationHelper.showNotification(message)
                 }
 
                 context?.let { ctx ->
                     val action = if (expense) "Expense" else "Income"
-                    
-                    // Show message as toast for immediate confirmation
                     val displayMessage = nudgeMessage ?: "$action saved successfully!"
                     Toast.makeText(ctx, displayMessage, Toast.LENGTH_SHORT).show()
-                }
-                
-                try {
-                    findNavController().navigateUp()
-                } catch (e: Exception) {
-                    Log.e("AddTransactionFragment", "Navigation failed: ${e.message}")
                 }
             },
             onFailure = { e ->
                 if (isAdded) {
-                    Log.e("TraceFlow", "STEP 7 FAILURE: Repository Failure Callback: ${e.message}")
                     Toast.makeText(context, "Transaction failed: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         )
     }
 
-    // Listens for real time updates to the transaction history.
+    // Tracks historical transaction data for UI display
     private fun listenForExpenseHistory() {
         val uid = currentUser?.uid ?: return
         db.collection("users").document(uid).collection("transactions")
@@ -555,7 +486,6 @@ class AddTransactionFragment : Fragment() {
             }
     }
 
-    // Destroy view
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -1,3 +1,7 @@
+/**
+ * Manages user statistics, daily activity streaks, and achievement unlocking logic.
+ * Interacts with Firestore to persist progress and triggers UI notifications for milestones.
+ */
 package com.dianadimla.walo.data
 
 import android.os.Handler
@@ -9,7 +13,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import java.util.Calendar
 
-// Manages user stats and achievement unlocking logic
 class GamificationManager(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
@@ -17,12 +20,12 @@ class GamificationManager(
 
     private val TAG = "GamificationManager"
 
-    // Callback to notify UI when a new achievement or streak event occurs
+    // Callback to notify the UI when a new achievement or streak milestone is reached
     var onAchievementUnlocked: ((title: String) -> Unit)? = null
 
     private fun getSafeUid(): String? = auth.currentUser?.uid
 
-    // Updates the user's daily activity streak when the app is opened
+    // Updates the daily activity streak and awards consistency-based achievements
     fun onAppOpened() {
         val uid = getSafeUid() ?: return
         val userRef = firestore.collection("users").document(uid)
@@ -33,6 +36,7 @@ class GamificationManager(
             val stats = snapshot.get("stats") as? Map<*, *>
             val lastActiveTimestamp = snapshot.getTimestamp("stats.lastActiveDate")
             
+            // Normalise current time to midnight for date comparison
             val today = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
@@ -40,6 +44,7 @@ class GamificationManager(
                 set(Calendar.MILLISECOND, 0)
             }
 
+            // Initialise streak for first-time active users
             if (lastActiveTimestamp == null) {
                 val initialUpdates = mapOf(
                     "stats.currentStreak" to 1L,
@@ -58,6 +63,7 @@ class GamificationManager(
                 set(Calendar.MILLISECOND, 0)
             }
 
+            // Exit if user has already logged in today
             if (!lastActiveDate.before(today)) return@addOnSuccessListener
 
             val yesterday = Calendar.getInstance().apply {
@@ -68,6 +74,7 @@ class GamificationManager(
             var currentStreak = (stats?.get("currentStreak") as? Number)?.toLong() ?: 0L
             var longestStreak = (stats?.get("longestStreak") as? Number)?.toLong() ?: 0L
 
+            // Increment streak if last login was yesterday; otherwise, reset to 1
             if (lastActiveDate == yesterday) {
                 currentStreak++
             } else {
@@ -85,18 +92,16 @@ class GamificationManager(
             )
             userRef.update(updates)
 
-            // Day 3 Behavior: Trigger two separate notifications
+            // Triggers specific feedback and achievements for a 3-day streak
             if (currentStreak == 3L) {
-                // First notification: Streak motivator
                 onAchievementUnlocked?.invoke("Streak Started!\nKeep up the streak by opening Walo every day.")
                 
-                // Second notification: Achievement unlock with a delay to ensure they appear as separate events
+                // Delay achievement unlock to distinguish it from the streak notification
                 Handler(Looper.getMainLooper()).postDelayed({
                     unlockAchievement(uid, "CONSISTENT_TRACKER", "Consistent Tracker (3 Day Streak)")
                 }, 500)
             }
             
-            // Day 7 Behavior: Unlock achievement normally
             if (currentStreak == 7L) {
                 unlockAchievement(uid, "SEVEN_DAY_STREAK", "7-Day Streak")
             }
@@ -106,17 +111,16 @@ class GamificationManager(
         }
     }
 
-    // Checks and unlocks transaction-related achievements
+    // Evaluates transaction history to unlock related badges
     fun checkAchievements(confirmedCount: Long? = null) {
         val uid = getSafeUid() ?: return
         
         if (confirmedCount != null) {
-            // Uses confirmed transaction count to check for achievements
             if (confirmedCount >= 1L) {
                 unlockAchievement(uid, "FIRST_ENTRY", "First Entry")
             }
         } else {
-            // Fetches stats from Firestore if count is not provided
+            // Fallback: Fetch latest counts from Firestore if not provided
             val userRef = firestore.collection("users").document(uid)
             userRef.get().addOnSuccessListener { snapshot ->
                 if (!snapshot.exists()) return@addOnSuccessListener
@@ -131,12 +135,11 @@ class GamificationManager(
         }
     }
 
-    // Atomically increments a specific user statistic in Firestore
+    // Atomically increments a user metric in Firestore and returns the new value
     fun incrementStat(stat: String, onComplete: ((Long) -> Unit)? = null) {
         val uid = getSafeUid() ?: return
         val userRef = firestore.collection("users").document(uid)
 
-        // Increment the nested stat field
         userRef.update("stats.$stat", FieldValue.increment(1L))
             .addOnSuccessListener {
                 userRef.get().addOnSuccessListener { snapshot ->
@@ -145,13 +148,13 @@ class GamificationManager(
                 }
             }
             .addOnFailureListener {
-                // Initialize stats map if it doesn't exist
+                // Initialize the stats map if the document structure is missing
                 val updates = mapOf("stats" to mapOf(stat to 1L))
                 userRef.set(updates, SetOptions.merge())
             }
     }
 
-    // Triggered when a goal is created to track progress and achievements
+    // Rewards the user for creating their first goal
     fun onGoalCreated() {
         incrementStat("goalsCreated") { count ->
             if (count >= 1) {
@@ -161,7 +164,7 @@ class GamificationManager(
         }
     }
 
-    // Triggered when a goal is completed to award achievements
+    // Evaluates total completed goals to award progression-based achievements
     fun onGoalCompleted() {
         incrementStat("goalsCompleted") { count ->
             val uid = getSafeUid() ?: return@incrementStat
@@ -173,12 +176,11 @@ class GamificationManager(
         }
     }
 
-    // Persists unlocked achievement to the user's collection in Firestore
+    // Persists a newly earned achievement to the user profile if not already unlocked
     private fun unlockAchievement(uid: String, id: String, title: String) {
         val achRef = firestore.collection("users").document(uid)
             .collection("achievements").document(id)
 
-        // Check if achievement is already unlocked before writing
         achRef.get().addOnSuccessListener { snapshot ->
             if (!snapshot.exists()) {
                 val data = mapOf(
@@ -189,14 +191,13 @@ class GamificationManager(
                 achRef.set(data)
                     .addOnSuccessListener {
                         Log.d(TAG, "Achievement unlocked: $title")
-                        // Trigger the callback to notify the UI
                         onAchievementUnlocked?.invoke(title)
                     }
             }
         }
     }
 
-    // Legacy method for logging transactions
+    // Legacy support for transaction based logic
     fun onTransactionLogged() {
         checkAchievements()
     }

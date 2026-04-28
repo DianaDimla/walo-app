@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Screen for managing and tracking financial goals. -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,6 +9,7 @@
     android:padding="16dp"
     tools:context=".ui.fragments.GoalsFragment">
 
+    <!-- Screen title -->
     <TextView
         android:id="@+id/goals_title"
         android:layout_width="wrap_content"
@@ -20,6 +22,7 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
+    <!-- List of active financial goals -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/goals_recycler_view"
         android:layout_width="match_parent"
@@ -28,6 +31,7 @@
         android:visibility="gone"
         tools:listitem="@layout/item_goal_pod" />
 
+    <!-- Guidance displayed when no goals have been created -->
     <LinearLayout
         android:id="@+id/empty_state_layout"
         android:layout_width="wrap_content"
@@ -55,6 +59,7 @@
             android:textColor="@color/white" />
     </LinearLayout>
 
+    <!-- Action button to initiate new goal creation -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddGoal"
         android:layout_width="wrap_content"

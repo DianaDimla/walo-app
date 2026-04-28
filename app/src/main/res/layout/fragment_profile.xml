@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The root layout for the user profile screen. -->
+<!-- User profile screen displaying account information, application details, and logout options. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,17 +14,18 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Navigation header -->
         <ImageButton
             android:id="@+id/btn_back_profile"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back"
             android:src="@drawable/ic_back"
             app:tint="@color/bold_text_color" />
 
-        <!-- A card to display the user's profile information. -->
+        <!-- User account information section -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,23 +39,31 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- A TextView to display the user's name. -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤 Profile"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/bold_text_color"
+                    android:layout_marginBottom="12dp" />
+
                 <TextView
                     android:id="@+id/profile_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="User Name"
+                    tools:text="Diana"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/bold_text_color" />
 
-                <!-- A TextView to display the user's email. -->
                 <TextView
                     android:id="@+id/profile_email"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="user.email@example.com"
-                    android:textSize="16sp"
+                    android:layout_marginTop="2dp"
+                    tools:text="Email: diana@gmail.com"
+                    android:textSize="14sp"
                     android:textColor="@color/input_box_tint" />
 
 
@@ -62,7 +71,47 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- A card for managing notification preferences. -->
+        <!-- User feedback section -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btn_send_feedback"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✉️ Send Feedback"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/bold_text_color" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_back"
+                    android:rotation="180"
+                    app:tint="@color/placeholder_text_color" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Application information section -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -77,121 +126,57 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- The title for the notifications section. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Notifications"
+                    android:text="ℹ️ About"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="@color/bold_text_color" />
+                    android:textColor="@color/bold_text_color"
+                    android:layout_marginBottom="12dp" />
 
-                <!-- A disabled switch for transaction notifications. -->
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Add Transactions"
-                    android:checked="false"
-                    android:enabled="false"/>
-
-                <!-- A disabled switch for spending alerts. -->
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Spending alerts"
-                    android:checked="false"
-                    android:enabled="false"/>
-
-                <!-- A disabled switch for weekly summary notifications. -->
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Weekly summary"
-                    android:checked="false"
-                    android:enabled="false"/>
-
-                <!-- A disabled switch for goal reminders. -->
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Goal reminders"
-                    android:checked="false"
-                    android:enabled="false"/>
-
-                <!-- A note indicating that notification preferences are not yet available. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="(Notification preferences not available yet)"
-                    android:textColor="@color/placeholder_text_color"
-                    android:textSize="12sp"
-                    android:textStyle="italic" />
+                    android:text="Version 1.0"
+                    android:textColor="@color/input_box_tint"
+                    android:layout_marginBottom="4dp" />
 
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- A card displaying information about the application. -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <!-- The title for the about section. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="About"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/bold_text_color" />
+                    android:text="Created by Diana Dimla"
+                    android:textColor="@color/input_box_tint"
+                    android:layout_marginBottom="4dp" />
 
-                <!-- The application version number. -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Version 0.5"
-                    android:textColor="@color/input_box_tint" />
-
-                <!-- The creator of the application. -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Created by: Diana Dimla"
-                    android:textColor="@color/input_box_tint" />
-
-                <!-- A short description of the application. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Walo – Student Finance Helper"
+                    android:textColor="@color/input_box_tint"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Helping students manage smarter 💸"
                     android:textColor="@color/input_box_tint" />
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- A button to log the user out of the application. -->
+        <!-- Account session management -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/logoutButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
+            android:paddingVertical="12dp"
             android:text="Logout"
             app:backgroundTint="@color/bold_text_color"
             android:textColor="@android:color/white"
-            app:cornerRadius="12dp"
+            app:cornerRadius="16dp"
             app:elevation="4dp"/>
 
     </LinearLayout>

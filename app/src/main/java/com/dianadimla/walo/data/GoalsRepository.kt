@@ -46,7 +46,14 @@ class GoalsRepository {
             return
         }
 
-        collection.add(goal)
+        // Set lastUpdated to current server time if not set
+        val goalToSave = if (goal.lastUpdated == 0L) {
+            goal.copy(lastUpdated = System.currentTimeMillis())
+        } else {
+            goal
+        }
+
+        collection.add(goalToSave)
             .addOnSuccessListener {
                 Log.d("GoalsRepository", "Goal created successfully")
                 // Trigger gamification ONLY after success
@@ -60,9 +67,12 @@ class GoalsRepository {
     fun updateGoal(goal: Goal) {
         val docRef = goalsCollection?.document(goal.id) ?: return
         
-        docRef.set(goal).addOnSuccessListener {
+        // Ensure timestamp is refreshed on every manual update
+        val updatedGoal = goal.copy(lastUpdated = System.currentTimeMillis())
+        
+        docRef.set(updatedGoal).addOnSuccessListener {
             // Check if goal was just completed
-            if (goal.currentAmount >= goal.targetAmount && goal.targetAmount > 0) {
+            if (updatedGoal.currentAmount >= updatedGoal.targetAmount && updatedGoal.targetAmount > 0) {
                 Log.d("GoalsRepository", "Goal completed! Triggering gamification.")
                 gamificationManager.onGoalCompleted()
             }

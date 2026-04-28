@@ -1,3 +1,7 @@
+/**
+ * Adapter for displaying gamification achievements in a RecyclerView.
+ * Manages both locked and unlocked states with distinct visual styles.
+ */
 package com.dianadimla.walo.adapters
 
 import android.content.res.ColorStateList
@@ -13,6 +17,7 @@ import com.dianadimla.walo.model.Achievement
 class AchievementAdapter(private var achievements: List<Achievement>) :
     RecyclerView.Adapter<AchievementAdapter.AchievementViewHolder>() {
 
+    // ViewHolder holding references to achievement item views
     class AchievementViewHolder(val binding: ItemAchievementBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -25,6 +30,7 @@ class AchievementAdapter(private var achievements: List<Achievement>) :
         return AchievementViewHolder(binding)
     }
 
+    // Binds achievement data and applies visual styling based on unlock status
     override fun onBindViewHolder(holder: AchievementViewHolder, position: Int) {
         val achievement = achievements[position]
 
@@ -35,29 +41,25 @@ class AchievementAdapter(private var achievements: List<Achievement>) :
             ivAchievementIcon.setImageResource(achievement.iconRes)
 
             if (achievement.isUnlocked) {
-                // Unlocked State
+                // Apply high contrast colors and gold tint for earned achievements
                 achievementContainer.alpha = 1.0f
                 achievementContainer.setBackgroundColor(ContextCompat.getColor(context, R.color.badge_unlocked_bg))
                 
                 ivLockOverlay.visibility = View.GONE
                 
-                // Icon Gold Tint
                 ivAchievementIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.badge_gold))
                 
-                // Text White
                 tvAchievementTitle.setTextColor(ContextCompat.getColor(context, R.color.white))
                 tvAchievementDescription.setTextColor(ContextCompat.getColor(context, R.color.white))
             } else {
-                // Locked State
+                // Apply faded grey style and lock overlay for pending achievements
                 achievementContainer.alpha = 0.5f
                 achievementContainer.setBackgroundColor(ContextCompat.getColor(context, R.color.badge_locked_bg))
                 
                 ivLockOverlay.visibility = View.VISIBLE
                 
-                // Icon Grey Tint
                 ivAchievementIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.badge_locked_grey))
                 
-                // Text Dark Grey
                 tvAchievementTitle.setTextColor(ContextCompat.getColor(context, R.color.black))
                 tvAchievementDescription.setTextColor(ContextCompat.getColor(context, R.color.placeholder_text_color))
             }
@@ -66,6 +68,7 @@ class AchievementAdapter(private var achievements: List<Achievement>) :
 
     override fun getItemCount(): Int = achievements.size
 
+    // Refreshes the adapter with a new list of achievements
     fun updateData(newAchievements: List<Achievement>) {
         achievements = newAchievements
         notifyDataSetChanged()

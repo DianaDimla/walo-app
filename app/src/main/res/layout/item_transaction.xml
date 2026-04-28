@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Layout for a single transaction entry, displaying the category, note, and monetary value. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -6,6 +7,7 @@
     android:padding="12dp"
     android:gravity="center_vertical">
 
+    <!-- Transaction identification details -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -32,6 +34,7 @@
             android:maxLines="1"/>
     </LinearLayout>
 
+    <!-- Formatted transaction amount -->
     <TextView
         android:id="@+id/transaction_amount_text"
         android:layout_width="wrap_content"

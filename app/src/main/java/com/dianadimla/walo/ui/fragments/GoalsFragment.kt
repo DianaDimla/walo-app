@@ -1,22 +1,33 @@
+/**
+ * Fragment for managing and tracking financial goals.
+ * Provides functionality to create, edit, delete, and contribute to savings targets.
+ */
 package com.dianadimla.walo.ui.fragments
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dianadimla.walo.adapters.GoalAdapter
 import com.dianadimla.walo.data.Goal
+import com.dianadimla.walo.data.NudgeManager
 import com.dianadimla.walo.databinding.DialogAddAmountBinding
 import com.dianadimla.walo.databinding.DialogCreateGoalBinding
 import com.dianadimla.walo.databinding.DialogGoalOptionsBinding
 import com.dianadimla.walo.databinding.FragmentGoalsBinding
+import com.dianadimla.walo.utils.NotificationHelper
 import com.dianadimla.walo.viewmodels.GoalsViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class GoalsFragment : Fragment() {
 
@@ -24,7 +35,12 @@ class GoalsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var goalAdapter: GoalAdapter
-    private val viewModel: GoalsViewModel by viewModels()
+    
+    // Shared ViewModel instance to maintain state across the activity
+    private val viewModel: GoalsViewModel by activityViewModels()
+    
+    private lateinit var nudgeManager: NudgeManager
+    private lateinit var notificationHelper: NotificationHelper
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,15 +53,18 @@ class GoalsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        nudgeManager = NudgeManager.getInstance()
+        notificationHelper = NotificationHelper(requireContext())
+
         setupRecyclerView()
 
-        // Observe LiveData from ViewModel
+        // Syncs the UI with the latest goals data
         viewModel.goals.observe(viewLifecycleOwner) { goals ->
             goalAdapter.submitList(goals)
             updateUI(goals)
         }
         
-        // Observe achievement unlocks from the ViewModel
+        // Displays achievement milestones as they are reached
         viewModel.achievementUnlocked.observe(viewLifecycleOwner) { title ->
             showAchievementDialog(title)
         }
@@ -59,6 +78,7 @@ class GoalsFragment : Fragment() {
         }
     }
 
+    // Configures the list and handles user interaction events
     private fun setupRecyclerView() {
         goalAdapter = GoalAdapter(
             onGoalClicked = { goal ->
@@ -74,12 +94,11 @@ class GoalsFragment : Fragment() {
         }
     }
     
-    // Shows a sequential dialog with a consistent "Achievement Unlocked" style
+    // Presents a feedback dialog when a milestone or streak is unlocked
     private fun showAchievementDialog(title: String) {
         if (!isAdded) return
         
         context?.let { ctx ->
-            // Consistent style for both streak and achievement notifications
             val dialogTitle = if (title.contains("Streak Started")) {
                 "Streak Unlocked!"
             } else {
@@ -96,6 +115,7 @@ class GoalsFragment : Fragment() {
         }
     }
 
+    // Displays management options for a selected goal
     private fun showGoalOptionsDialog(goal: Goal) {
         val dialogBinding = DialogGoalOptionsBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(requireContext())
@@ -115,6 +135,7 @@ class GoalsFragment : Fragment() {
         dialog.show()
     }
 
+    // Opens an input dialog to modify the goal's title
     private fun showEditGoalNameDialog(goal: Goal) {
         val container = FrameLayout(requireContext())
         val params = FrameLayout.LayoutParams(
@@ -143,8 +164,28 @@ class GoalsFragment : Fragment() {
             .show()
     }
 
+    // Opens the creation wizard for a new financial goal
     private fun showCreateGoalDialog() {
         val dialogBinding = DialogCreateGoalBinding.inflate(layoutInflater)
+        val calendar = Calendar.getInstance()
+        var selectedDeadline: Long? = null
+
+        // Initialises date picker for target deadline selection
+        dialogBinding.etDeadline.setOnClickListener {
+            DatePickerDialog(
+                requireContext(),
+                { _, year, month, day ->
+                    calendar.set(year, month, day)
+                    selectedDeadline = calendar.timeInMillis
+                    val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    dialogBinding.etDeadline.setText(format.format(calendar.time))
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
             .create()
@@ -153,15 +194,18 @@ class GoalsFragment : Fragment() {
             val name = dialogBinding.etGoalName.text.toString()
             val amountStr = dialogBinding.etTargetAmount.text.toString()
 
-            if (name.isNotBlank() && amountStr.isNotBlank()) {
+            if (name.isNotBlank() && amountStr.isNotBlank() && selectedDeadline != null) {
                 val amount = amountStr.toDoubleOrNull() ?: 0.0
                 val newGoal = Goal(
                     title = name,
-                    targetAmount = amount
+                    targetAmount = amount,
+                    deadline = selectedDeadline!!
                 )
                 
                 viewModel.addGoal(newGoal)
                 dialog.dismiss()
+            } else {
+                Toast.makeText(requireContext(), "Please fill in all fields and select a deadline", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -172,6 +216,7 @@ class GoalsFragment : Fragment() {
         dialog.show()
     }
 
+    // Opens an input dialog to add savings progress to a specific goal
     private fun showAddAmountDialog(goal: Goal) {
         val dialogBinding = DialogAddAmountBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(requireContext())
@@ -183,11 +228,22 @@ class GoalsFragment : Fragment() {
             if (amountStr.isNotBlank()) {
                 val addedAmount = amountStr.toDoubleOrNull() ?: 0.0
                 val newAmount = goal.currentAmount + addedAmount
-                // Prevent exceeding targetAmount
+                // Caps the progress at the target amount
                 val finalAmount = if (newAmount > goal.targetAmount) goal.targetAmount else newAmount
                 
-                val updatedGoal = goal.copy(currentAmount = finalAmount)
+                val updatedGoal = goal.copy(
+                    currentAmount = finalAmount,
+                    lastUpdated = System.currentTimeMillis()
+                )
+                
                 viewModel.updateGoal(updatedGoal)
+                
+                // Evaluates the updated progress for immediate AI feedback
+                nudgeManager.checkGoalUpdateNudges(updatedGoal) { message ->
+                    notificationHelper.showNotification(message)
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                }
+
                 dialog.dismiss()
             }
         }
@@ -199,6 +255,7 @@ class GoalsFragment : Fragment() {
         dialog.show()
     }
 
+    // Toggles between goal list and empty state guidance
     private fun updateUI(goals: List<Goal>) {
         if (goals.isEmpty()) {
             binding.emptyStateLayout.visibility = View.VISIBLE

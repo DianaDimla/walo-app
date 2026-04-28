@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Layout for a single achievement badge, displaying its unlock status and description. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,6 +15,7 @@
         android:layout_height="wrap_content"
         android:padding="16.dp">
 
+        <!-- Badge icon with conditional lock overlay -->
         <FrameLayout
             android:id="@+id/iconContainer"
             android:layout_width="80.dp"
@@ -42,6 +44,7 @@
                 app:tint="@color/white" />
         </FrameLayout>
 
+        <!-- Achievement identification and criteria -->
         <TextView
             android:id="@+id/tvAchievementTitle"
             android:layout_width="0.dp"

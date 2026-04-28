@@ -1,27 +1,28 @@
+/**
+ * In-memory storage for AI-Driven nudges during the current app session.
+ * Provides central access to the nudge history for UI components.
+ */
 package com.dianadimla.walo.data
 
-
- // Singleton object to store AI nudge notifications locally during the app session.
 object NudgeStorage {
-    // In-memory list to hold nudges
+    // Stores the session's nudge history in a mutable list
     private val nudgeList = mutableListOf<Nudge>()
 
-
-    // Adds a new nudge to the top of the list.
-    // message The nudge message text.
+    /**
+     * Appends a new message to the session history.
+     * Inserts at the beginning to ensure the latest nudge appears first.
+     */
     fun addNudge(message: String) {
         val newNudge = Nudge(message)
-        // Add to index 0 so the newest is always at the top
         nudgeList.add(0, newNudge)
     }
 
-
-     // Returns the current list of stored nudges.
+    // Retrieves all nudges captured in the current session
     fun getAllNudges(): List<Nudge> {
         return nudgeList.toList()
     }
 
-     // Clears all stored nudges.
+    // Resets the nudge history
     fun clearNudges() {
         nudgeList.clear()
     }

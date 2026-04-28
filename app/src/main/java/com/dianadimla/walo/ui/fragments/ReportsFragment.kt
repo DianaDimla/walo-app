@@ -1,36 +1,49 @@
+/**
+ * Fragment responsible for visualising financial reports and trends.
+ * Displays weekly spending graphs and monthly category distributions using MPAndroidChart.
+ */
 package com.dianadimla.walo.ui.fragments
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import com.dianadimla.walo.R
-import com.dianadimla.walo.data.Pod
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.RecyclerView
+import com.dianadimla.walo.data.*
 import com.dianadimla.walo.databinding.FragmentReportsBinding
+import com.dianadimla.walo.databinding.ItemWeeklyGraphBinding
+import com.dianadimla.walo.viewmodels.InsightsViewModel
+import com.dianadimla.walo.utils.ColorUtils
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.github.mikephil.charting.formatter.ValueFormatter
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.math.abs
 
 class ReportsFragment : Fragment() {
 
-    // View binding
     private var _binding: FragmentReportsBinding? = null
     private val binding get() = _binding!!
 
-    // Firebase
-    private val db = Firebase.firestore
-    private val currentUser = Firebase.auth.currentUser
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+    
+    private val nudgeManager = NudgeManager.getInstance()
+    private val gamificationManager = GamificationManager(auth, db)
+    private val repository = TransactionsRepository(auth, db, gamificationManager, nudgeManager)
 
-    // Inflate the layout
+    private val insightsViewModel: InsightsViewModel by viewModels()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,101 +52,224 @@ class ReportsFragment : Fragment() {
         return binding.root
     }
 
-    // View created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        listenForPodUpdates()
-    }
-
-    // Listen for pod updates
-    private fun listenForPodUpdates() {
-        val uid = currentUser?.uid ?: return
-
-        db.collection("users").document(uid).collection("pods")
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.w("ReportsFragment", "Listen for pods failed.", e)
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && !snapshot.isEmpty) {
-                    val pods = snapshot.toObjects(Pod::class.java)
-                    setupBarChart(pods)
-                } else {
-                    Log.d("ReportsFragment", "No pods found.")
-                    binding.barChart.clear() // Clear chart
-                    binding.barChart.invalidate()
-                }
-            }
-    }
-
-    // Set up the bar chart
-    private fun setupBarChart(pods: List<Pod>) {
-        val entries = ArrayList<BarEntry>()
-        val labels = ArrayList<String>()
-        val barColors = ArrayList<Int>()
-        var index = 0f
         
-        val sortedPods = pods.sortedBy { it.name }
+        setupInsightsObserver()
+        setupViewPager()
+        setupMonthSpinner()
+        
+        // Initialises insight calculation for the current user
+        if (auth.currentUser != null) {
+            insightsViewModel.calculateWeeklyInsights()
+        }
+    }
 
-        sortedPods.forEach { pod ->
-            entries.add(BarEntry(index, pod.currentSpending.toFloat())) // Use currentSpending
-            labels.add(pod.name)
-
-            // Calculate progress using limit
-            val progress = if (pod.limit > 0) {
-                (pod.currentSpending / pod.limit * 100).toInt()
+    // Observes AI-generated insight messages for display
+    private fun setupInsightsObserver() {
+        insightsViewModel.insightMessages.observe(viewLifecycleOwner) { messages ->
+            if (messages != null && messages.isNotEmpty()) {
+                binding.tvInsightMessages.text = messages.joinToString("\n\n")
             } else {
-                0 
+                binding.tvInsightMessages.text = "No transactions found for this week yet."
             }
-            barColors.add(getProgressBarColor(progress)) // Get color
-            index++
+        }
+    }
+
+    // Configures the ViewPager to display weekly comparison graphs
+    private fun setupViewPager() {
+        val offsets = listOf(-1, 0) // Represents last week and current week
+        val adapter = WeeklyGraphAdapter(offsets, repository)
+        binding.vpWeeklyGraphs.adapter = adapter
+        binding.vpWeeklyGraphs.setCurrentItem(1, false)
+    }
+
+    // Configures the month selector for historical spending analysis
+    private fun setupMonthSpinner() {
+        val monthNames = mutableListOf<String>()
+        val monthOffsets = mutableListOf<Int>()
+        val calendar = Calendar.getInstance()
+        val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+
+        // Generates the last 6 months for selection
+        for (i in 0 downTo -5) {
+            val tempCal = Calendar.getInstance()
+            tempCal.add(Calendar.MONTH, i)
+            monthNames.add(monthFormat.format(tempCal.time))
+            monthOffsets.add(i)
         }
 
-        val dataSet = BarDataSet(entries, "Pod Spending")
-        dataSet.colors = barColors // Use dynamic colors
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 12f
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, monthNames)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.monthSpinner.adapter = adapter
 
-        val barData = BarData(dataSet)
+        binding.monthSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedMonth = monthNames[position]
+                val selectedOffset = monthOffsets[position]
+                
+                binding.tvSelectedMonthLabel.text = "Data for $selectedMonth"
+                loadMonthlyData(selectedOffset)
+            }
 
-        binding.barChart.apply {
-            this.data = barData
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    // Retrieves transaction data for the selected month from the repository
+    private fun loadMonthlyData(offset: Int) {
+        repository.getMonthlyCategorySpending(offset, { spendingMap ->
+            if (_binding != null && isAdded) {
+                updatePieChart(spendingMap)
+            }
+        }, {
+            // Error handling for data retrieval
+        })
+    }
+
+    // Visualises categorical spending using a pie chart
+    private fun updatePieChart(spendingByCategory: Map<String, Double>) {
+        if (spendingByCategory.isEmpty()) {
+            binding.spendingPieChart.visibility = View.GONE
+            binding.emptyStateText.visibility = View.VISIBLE
+            return
+        }
+
+        binding.spendingPieChart.visibility = View.VISIBLE
+        binding.emptyStateText.visibility = View.GONE
+
+        // Formats data entries with value labels for the legend
+        val entries = spendingByCategory.map { (category, amount) ->
+            PieEntry(amount.toFloat(), "$category (€${amount.toInt()})") 
+        }
+        
+        // Maps categories to consistent theme colours
+        val sliceColors = spendingByCategory.keys.map { category ->
+            ColorUtils.getCategoryColor(category)
+        }
+
+        val dataSet = PieDataSet(entries, "").apply {
+            colors = sliceColors
+            sliceSpace = 3f
+            selectionShift = 5f
+            setDrawValues(false)
+        }
+
+        binding.spendingPieChart.apply {
+            data = PieData(dataSet)
+            setUsePercentValues(false)
+            setDrawEntryLabels(false)
             description.isEnabled = false
-            legend.isEnabled = false
+            
+            legend.apply {
+                isEnabled = true
+                verticalAlignment = Legend.LegendVerticalAlignment.CENTER
+                horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
+                orientation = Legend.LegendOrientation.VERTICAL
+                setDrawInside(false)
+                xEntrySpace = 10f
+                yEntrySpace = 8f
+                textSize = 12f
+            }
 
-            // Disable zooming
-            setScaleEnabled(false)
-            isDoubleTapToZoomEnabled = false
+            isDrawHoleEnabled = true
+            setHoleColor(Color.TRANSPARENT)
+            setTransparentCircleAlpha(110)
+            holeRadius = 58f
+            transparentCircleRadius = 61f
 
-            // X-Axis style
-            xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-            xAxis.position = XAxis.XAxisPosition.BOTTOM
-            xAxis.setDrawGridLines(false)
-            xAxis.granularity = 1f
-            xAxis.isGranularityEnabled = true
-
-            // Y-Axis style
-            axisLeft.axisMinimum = 0f
-            axisRight.isEnabled = false
-
-            animateY(1000) // Animate
+            animateY(1200)
             invalidate()
         }
     }
 
-    // Get progress bar color
-    private fun getProgressBarColor(progress: Int): Int {
-        val colorRes = when {
-            progress < 80 -> R.color.progress_green
-            progress < 90 -> R.color.progress_yellow
-            progress < 100 -> R.color.progress_orange
-            else -> R.color.progress_red
+    // Adapter for managing the weekly spending line charts
+    inner class WeeklyGraphAdapter(
+        private val offsets: List<Int>,
+        private val repository: TransactionsRepository
+    ) : RecyclerView.Adapter<WeeklyGraphAdapter.GraphViewHolder>() {
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GraphViewHolder {
+            val binding = ItemWeeklyGraphBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            return GraphViewHolder(binding)
         }
-        return ContextCompat.getColor(requireContext(), colorRes)
+
+        override fun onBindViewHolder(holder: GraphViewHolder, position: Int) {
+            holder.bind(offsets[position])
+        }
+
+        override fun getItemCount(): Int = offsets.size
+
+        inner class GraphViewHolder(private val itemBinding: ItemWeeklyGraphBinding) : RecyclerView.ViewHolder(itemBinding.root) {
+            
+            // Initialises the weekly chart with data for the specified offset
+            fun bind(offset: Int) {
+                itemBinding.tvWeekLabel.text = calculateWeekRangeLabel(offset)
+
+                repository.getWeeklySpending(offset, { values, labels ->
+                    if (_binding != null && isAdded) {
+                        setupLineChart(itemBinding, values, labels)
+                    }
+                }, { })
+            }
+
+            // Calculates the human-readable date range for the week offset
+            private fun calculateWeekRangeLabel(weekOffset: Int): String {
+                val calendar = Calendar.getInstance()
+                val displayFormat = SimpleDateFormat("MMM d", Locale.getDefault())
+                calendar.add(Calendar.DAY_OF_YEAR, weekOffset * 7)
+                val endDate = calendar.time
+                calendar.add(Calendar.DAY_OF_YEAR, -6)
+                val startDate = calendar.time
+                return "Week of ${displayFormat.format(startDate)} – ${displayFormat.format(endDate)}"
+            }
+
+            // Configures the daily spending line chart visualisations
+            private fun setupLineChart(itemBinding: ItemWeeklyGraphBinding, values: List<Float>, labels: List<String>) {
+                if (values.isEmpty() || labels.isEmpty()) return
+                val entries = values.mapIndexed { index, value -> Entry(index.toFloat(), value) }
+                if (entries.isEmpty()) return
+
+                val dataSet = LineDataSet(entries, "Daily Spending").apply {
+                    color = Color.parseColor("#1E88E5")
+                    setCircleColor(Color.parseColor("#1E88E5"))
+                    lineWidth = 2.5f
+                    circleRadius = 4.5f
+                    setDrawCircleHole(false)
+                    valueTextSize = 10f
+                    setDrawFilled(true)
+                    fillColor = Color.parseColor("#1E88E5")
+                    fillAlpha = 40 
+                    mode = LineDataSet.Mode.CUBIC_BEZIER
+                    setDrawValues(values.any { it > 0 }) 
+                }
+
+                itemBinding.lineChart.apply {
+                    data = LineData(dataSet)
+                    description.isEnabled = false
+                    legend.isEnabled = false
+                    setScaleEnabled(false)
+                    xAxis.apply {
+                        valueFormatter = IndexAxisValueFormatter(labels)
+                        position = XAxis.XAxisPosition.BOTTOM
+                        setDrawGridLines(false)
+                        granularity = 1f
+                        textColor = Color.GRAY
+                    }
+                    axisLeft.apply {
+                        axisMinimum = 0f
+                        setDrawGridLines(true)
+                        gridColor = Color.LTGRAY
+                        textColor = Color.GRAY
+                    }
+                    axisRight.isEnabled = false
+                    animateX(1000)
+                    invalidate()
+                }
+            }
+        }
     }
 
-    // Destroy view
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

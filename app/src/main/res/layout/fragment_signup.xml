@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The root layout for the user signup screen. -->
+<!-- User registration screen for creating a new application account. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
@@ -9,7 +9,7 @@
     android:layout_height="match_parent"
     android:background="@color/app_background">
 
-    <!-- The application logo. -->
+    <!-- Header and branding section -->
     <ImageView
         android:id="@+id/app_logo_signup"
         android:layout_width="150dp"
@@ -29,6 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <!-- Personal information and account details section -->
     <EditText
         android:id="@+id/firstNameEditText"
         android:hint="First Name"
@@ -62,6 +63,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <!-- Password and security verification section -->
     <EditText
         android:id="@+id/passwordEditText"
         android:hint="Password"
@@ -84,7 +86,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <!-- A button to trigger the signup process. -->
+    <!-- Primary action button -->
     <Button
         android:id="@+id/signupButton"
         android:text="Sign Up"
@@ -92,6 +94,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <!-- Link to navigate back to login -->
     <TextView
         android:id="@+id/goToLoginText"
         android:text="Already have an account? Login"

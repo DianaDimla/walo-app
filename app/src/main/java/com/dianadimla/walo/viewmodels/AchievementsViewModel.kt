@@ -1,3 +1,7 @@
+/**
+ * ViewModel for managing and synchronising the user's achievement data.
+ * Merges static achievement definitions with real-time unlock status from Firestore.
+ */
 package com.dianadimla.walo.viewmodels
 
 import androidx.lifecycle.LiveData
@@ -21,8 +25,8 @@ class AchievementsViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
+    // Static definitions for all possible achievements within the application
     private val staticAchievements = listOf(
-        // Transaction achievements
         Achievement(
             id = "FIRST_ENTRY",
             title = "First Entry",
@@ -70,6 +74,10 @@ class AchievementsViewModel : ViewModel() {
     )
     // Icons from Icons8
 
+    /**
+     * Sets up a real-time listener to track the user's earned achievements.
+     * Updates the local achievement list by merging unlock status from Firestore.
+     */
     fun startListeningForAchievements() {
         val uid = auth.currentUser?.uid
         if (uid == null) {
@@ -78,7 +86,8 @@ class AchievementsViewModel : ViewModel() {
         }
 
         _isLoading.value = true
-        
+
+        // Ensures only one active listener exists at a time
         listenerRegistration?.remove()
 
         // Sync local list with unlocked achievements in Firestore
@@ -91,6 +100,7 @@ class AchievementsViewModel : ViewModel() {
                     return@addSnapshotListener
                 }
 
+                // Identifies IDs of achievements the user has already unlocked
                 val unlockedIds = querySnapshot?.documents?.mapNotNull { it.id } ?: emptyList()
                 val updatedList = staticAchievements.map { achievement ->
                     achievement.copy(isUnlocked = unlockedIds.contains(achievement.id))
@@ -101,6 +111,7 @@ class AchievementsViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
+        // Prevents memory leaks by detaching the Firestore listener
         listenerRegistration?.remove()
     }
 }

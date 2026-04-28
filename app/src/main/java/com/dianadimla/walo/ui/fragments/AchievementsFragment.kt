@@ -1,3 +1,7 @@
+/**
+ * Fragment for displaying the user's collection of earned and locked achievements.
+ * Visualises financial milestones as collectible badges in a grid layout.
+ */
 package com.dianadimla.walo.ui.fragments
 
 import android.os.Bundle
@@ -12,7 +16,6 @@ import com.dianadimla.walo.adapters.AchievementAdapter
 import com.dianadimla.walo.databinding.FragmentAchievementsBinding
 import com.dianadimla.walo.viewmodels.AchievementsViewModel
 
-// Fragment that displays the user's earned and locked achievements
 class AchievementsFragment : Fragment() {
 
     private var _binding: FragmentAchievementsBinding? = null
@@ -35,17 +38,17 @@ class AchievementsFragment : Fragment() {
         setupUI()
         observeViewModel()
         
-        // Start listening for real time achievement updates from Firestore
+        // Starts real-time observation of achievement milestones in Firestore
         viewModel.startListeningForAchievements()
     }
 
+    // Initialises the user interface components and the grid layout
     private fun setupUI() {
-        // Back Button click listener
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        // Configure RecyclerView with a 2 column grid layout for badges
+        // Configures a 2-column grid for displaying achievement badges
         adapter = AchievementAdapter(emptyList())
         binding.rvAchievements.apply {
             this.adapter = this@AchievementsFragment.adapter
@@ -54,8 +57,8 @@ class AchievementsFragment : Fragment() {
         }
     }
 
+    // Subscribes to achievement data changes to refresh the UI
     private fun observeViewModel() {
-        // Observe achievement list changes to update the adapter
         viewModel.achievements.observe(viewLifecycleOwner) { achievements ->
             adapter.updateData(achievements)
         }

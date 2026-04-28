@@ -1,3 +1,7 @@
+/**
+ * Fragment responsible for user authentication and session management.
+ * Handles login validation, Firebase integration, and persistence of the "Remember Me" preference.
+ */
 package com.dianadimla.walo.ui.fragments
 
 import android.content.Context
@@ -17,15 +21,12 @@ import com.google.firebase.auth.FirebaseAuth
 
 class LoginFragment : Fragment() {
 
-    // View binding
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    // Firebase authentication
     private lateinit var auth: FirebaseAuth
     private lateinit var sharedPrefs: SharedPreferences
 
-    // Inflate the layout
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,63 +36,58 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    // View created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         auth = FirebaseAuth.getInstance()
-        // Initialize SharedPreferences
+        
+        // Initialises shared preferences for local configuration storage
         sharedPrefs = requireContext().getSharedPreferences("WaloPrefs", Context.MODE_PRIVATE)
 
-        // Start animation
+        // Triggers the background brand animation
         val swimAnimation = AnimationUtils.loadAnimation(context, R.anim.slow_swim)
         binding.appLogo.startAnimation(swimAnimation)
 
-        // Check if user is already logged in
+        // Automatically bypasses login if a valid session exists and persistent login is enabled
         if (auth.currentUser != null && sharedPrefs.getBoolean("rememberMe", false)) {
             findNavController().navigate(R.id.action_login_to_home)
         }
 
-        // Login button click listener
         binding.loginButton.setOnClickListener {
             val email = binding.emailEditText.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
             val rememberMe = binding.rememberMeCheckBox.isChecked
 
-            // Validate email
+            // Basic format validation before attempting server-side authentication
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 binding.emailEditText.error = "Invalid Email"
                 return@setOnClickListener
             }
-            // Validate password
+            
             if (password.isEmpty()) {
                 binding.passwordEditText.error = "Enter password"
                 return@setOnClickListener
             }
 
-            // Firebase sign in
+            // Attempts to verify credentials with Firebase Authentication
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // Save "Remember Me" preference
+                        // Persists the session preference before navigating to the main interface
                         sharedPrefs.edit().putBoolean("rememberMe", rememberMe).apply()
-                        // Navigate to home screen
                         findNavController().navigate(R.id.action_login_to_home)
                     } else {
-                        // Show error toast
                         Toast.makeText(context, "Login failed: ${'$'}{task.exception?.message}", Toast.LENGTH_LONG).show()
                     }
                 }
         }
 
-        // Go to signup text click listener
         binding.goToSignupText.setOnClickListener {
             findNavController().navigate(R.id.action_login_to_signup)
         }
     }
 
-    // Destroy view
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // Avoid memory leaks
+        _binding = null
     }
 }
